@@ -1,0 +1,335 @@
+# React Native .gitignore
+
+# OSX
+#
+.DS_Store
+
+# Xcode
+#
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+ios/.xcode.env.local
+
+# Android/IntelliJ
+#
+build/
+.idea
+.gradle
+local.properties
+*.iml
+*.hprof
+.cxx/
+*.keystore
+!debug.keystore
+
+# node.js
+#
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# React Native Metro
+#
+.metro-health-check*
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
+# screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# Bundle artifact
+*.jsbundle
+
+# Ruby / CocoaPods
+**/Pods/
+/vendor/bundle/
+
+# Flipper
+#
+Flipper-Glyph/
+
+# Temporary Files created by Metro to check the health of the file watcher
+.metro-health-check*
+
+# Testing
+/coverage
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+google-services.json
+GoogleService-Info.plist
+
+# API Keys & Credentials
+**/secrets/
+**/credentials/
+service-account.json
+private-key.json
+*.pem
+*.p8
+*.p12
+
+# AI Model Files & Assets
+**/models/*.vrm
+**/models/*.fbx
+**/models/*.gltf
+**/models/*.glb
+src/assets/models/
+android/app/src/main/assets/models/
+ios/assets/models/
+
+# Audio Assets (Wake Word Models)
+**/audio/*.pv
+**/audio/*.wav
+**/audio/*.mp3
+src/assets/audio/wake-word/
+
+# Large Binary Assets
+*.mp4
+*.mov
+*.avi
+*.webm
+*.zip
+*.tar.gz
+*.rar
+
+# Babylon.js Generated Files
+**/babylon-cache/
+**/texture-cache/
+*.babylon
+*.babylonmeshdata
+*.babylongeometrydata
+
+# Solana/Blockchain
+**/wallets/
+**/keypairs/
+*.key
+*.wallet
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# TypeScript v1 declaration files
+typings/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Vim
+*.swp
+*.swo
+*~
+
+# JetBrains IDEs
+.idea/
+*.iws
+
+# VS Code settings (except essential ones)
+.vscode/settings.json
+.vscode/launch.json
+
+# Generated documentation
+docs/api/
+
+# E2E Test artifacts
+e2e/artifacts/
+screenshots/
+videos/
+
+# Performance profiling
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot
+
+# Generated files
+src/types/generated/
+*.generated.ts
+*.generated.js
+
+# Build outputs
+dist/
+build/
+out/
+.expo/
+.expo-shared/
+
+# Capacitor
+android/app/src/main/assets/public
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+ios/App/App/public
+ios/App/App/capacitor.config.json
+ios/App/App/capacitor.plugins.json
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# MacOS specific
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows specific
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux specific
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Custom project specific
+# Add any project-specific files/folders that should be ignored
+deployment/
+scripts/deploy/
+*.production.config.js
+
+# AI Training Data & Logs
+training-data/
+model-outputs/
+conversation-logs/
+voice-samples/
