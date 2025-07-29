@@ -1,172 +1,138 @@
 # 🚀 Bife - Voice-First AI DeFi Companion
 
 **Version:** 2.1.0  
-**Build:** React Native 0.74.1 (Bare Workflow)  
-**AI Engine:** Gemini 1.5 Pro + Claude 3 Opus + Whisper.cpp  
-**Avatar System:** Babylon.js 6.54 + VRM 1.0  
-**Blockchain:** Solana (Jupiter SDK v7, Wallet Adapter v2.1)  
+**Build:** React Native 0.74.1 → WebView Architecture (Android-only)  
+**AI Engine:** Gemini 1.5 Pro (Planned)  
+**Avatar System:** Three.js 3D Primitives (Pink Bonk's Wife Theme)  
+**Blockchain:** Solana Integration (Planned)  
 
 ## 🎯 Overview
 
-Bife is a revolutionary voice-first AI companion that democratizes DeFi access through natural conversation. Built for mobile-first experiences, Bife combines cutting-edge AI, 3D avatar technology, and seamless blockchain integration to make decentralized finance as easy as talking to a friend.
+Bife is a revolutionary voice-first AI companion featuring an adorable pink-themed 3D animated Shiba Inu ("Bonk's wife"). Currently implemented as a working Android WebView app with beautiful 3D animations, interactive features, and a charming feminine pink aesthetic.
 
-### ✨ Key Features
+### ✨ Current Features (Working)
 
-- **🎙️ Voice-First Interface**: Natural conversation with wake word detection
-- **🤖 AI-Powered Companion**: Emotional intelligence with Babylon.js VRM avatar  
-- **⚡ Solana Integration**: Jupiter aggregator, staking, portfolio management
-- **🎓 Educational Platform**: Interactive DeFi tutorials with gamification
-- **🔐 Enterprise Security**: Biometric auth, hardware wallet support
-- **📱 Cross-Platform**: Optimized for iOS & Android with adaptive performance
+- **� Beautiful 3D Dog Companion**: Real-time Three.js rendered pink Shiba Inu
+- **💕 Interactive Animations**: Hover effects, click responses, floating hearts
+- **✨ Particle Effects**: Pink sparkles, breathing animations, tail wagging
+- **� Feminine Pink Theme**: Complete pink aesthetic as "Bonk's wife"
+- **� Android WebView**: Native Android app with smooth performance
+- **�️ Touch Interactions**: Tap for excitement, hover for gentle responses
 
-## 🏗️ Architecture
+## 🏗️ Current Architecture
 
-### Core Technologies
-
-```
-Frontend:    React Native 0.74.1 + TypeScript
-State:       Zustand + MMKV (persistent storage)
-Navigation:  React Navigation v6 (Stack + Tabs)
-Animation:   React Native Reanimated v3
-UI:          React Native Gesture Handler
-Storage:     React Native MMKV (encrypted)
-```
-
-### AI & Voice Stack
+### Working Implementation
 
 ```
-ASR:         Gemini 1.5 Pro → Whisper.cpp (fallback)
-NLP:         Claude 3 Opus → Gemini 1.5 Pro (fallback)  
-TTS:         Google Cloud TTS → React Native TTS
-Wake Word:   Porcupine v2.1 (on-device)
+Frontend:    HTML5 + CSS3 + JavaScript (WebView)
+3D Engine:   Three.js r128 (CDN-delivered)
+Animation:   GSAP 3.12.2 + CSS transforms
+UI Theme:    Pink feminine aesthetic for "Bonk's wife"
+Container:   Android WebView (Native Kotlin)
+Storage:     Local assets (3.9MB APK)
 ```
 
-### 3D Avatar System
+### Technology Stack
 
 ```
-Engine:      Babylon.js 6.54 + React Native integration
-Models:      VRM 1.0 format (400k polygons max)
-Physics:     cannon-es (cloth/hair simulation)
-Performance: Adaptive LOD based on device class
+3D Rendering:   Three.js primitives (spheres, cylinders, cones)
+Materials:      MeshPhongMaterial with pink color variations
+Lighting:       Ambient + Directional lights for depth
+Animations:     Float, breathe, tail wag, ear flutter
+Interactions:   Mouse/touch events with GSAP transitions
+Effects:        Particle sparkles, floating hearts, glow
 ```
 
-### Blockchain Integration
-
-```
-Primary Chain:  Solana (devnet/mainnet)
-RPC:           Custom endpoints + fallbacks
-DEX:           Jupiter Aggregator v7 (MEV protection)
-Wallets:       Phantom, Solflare, Ledger support
-Cross-chain:   Wormhole SDK v4 (Ethereum L2s)
-```
-
-## 📁 Project Structure
+## 📁 Current Project Structure
 
 ```
 bife/
-├── src/
-│   ├── ai/                 # AI service integrations
-│   │   └── claude.ts       # Claude 3 Opus integration
-│   ├── avatar/             # 3D avatar system
-│   │   └── BabylonAvatarSystem.ts
-│   ├── blockchain/         # Blockchain services
-│   │   └── solana.ts       # Solana integration
-│   ├── components/         # Reusable UI components
-│   ├── screens/            # App screens
-│   │   └── HomeScreen.tsx  # Main interface
-│   ├── services/           # Core services
-│   │   └── voice.ts        # Voice processing
-│   ├── store/              # State management
-│   │   └── index.ts        # Zustand stores
-│   ├── types/              # TypeScript definitions
-│   │   └── index.ts        # Core types
-│   └── utils/              # Utility functions
-├── android/                # Android native code
-├── ios/                    # iOS native code
-├── App.tsx                 # Main app component
-├── package.json            # Dependencies
-├── tsconfig.json           # TypeScript config
-├── babel.config.js         # Babel configuration
-├── metro.config.js         # Metro bundler config
-└── .env                    # Environment variables
+├── android/                # Android WebView app
+│   ├── app/
+│   │   ├── src/main/
+│   │   │   ├── assets/
+│   │   │   │   ├── index.html      # Main 3D companion app
+│   │   │   │   └── models/         # 3D assets (Shiba.fbx)
+│   │   │   ├── java/com/tempproject/
+│   │   │   │   ├── MainActivity.kt # WebView container
+│   │   │   │   └── MainApplication.kt
+│   │   │   └── AndroidManifest.xml
+│   │   └── build.gradle    # Android build config
+│   ├── build.gradle        # Project build config
+│   └── gradlew            # Gradle wrapper
+├── App.tsx                 # React Native entry (unused)
+├── package.json            # Node.js dependencies
+├── README.md              # This documentation
+└── .gitignore             # Git exclusions
 ```
+
+### Key Files
+
+- **`android/app/src/main/assets/index.html`**: Complete 3D companion app
+- **`android/app/src/main/java/.../MainActivity.kt`**: WebView loader
+- **`android/app/build.gradle`**: APK build configuration
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- **Node.js** 18+ with **Yarn 4.0+**
-- **React Native CLI** 0.74+
 - **Android Studio** (for Android development)
-- **Xcode** 15+ (for iOS development)
-- **Google Cloud Account** (for AI services)
-- **Anthropic API Key** (for Claude integration)
+- **Android SDK** API 34+
+- **ADB** (Android Debug Bridge)
+- **Git** for version control
 
-### Installation
+### Quick Start
+
+#### For Web Deployment (Vercel)
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-org/bife.git
+git clone <repository-url>
 cd bife
 ```
 
-2. **Install dependencies** (Yarn-only, as per PRD)
+2. **Install dependencies**
 ```bash
-yarn install
+npm install
 ```
 
-3. **Configure environment variables**
+3. **Configure environment**
 ```bash
 cp .env.example .env
-# Edit .env with your API keys and configuration
+# Edit .env with your Gemini API key
 ```
 
-4. **Setup iOS dependencies** (iOS only)
+4. **Deploy to Vercel**
 ```bash
-cd ios && pod install && cd ..
+npm run build:vercel
+# Or connect your GitHub repo to Vercel dashboard
 ```
 
-5. **Start the Metro bundler**
+#### For Android Development
+
+1. **Build the Android APK**
 ```bash
-yarn start
+cd android
+./gradlew assembleDebug
 ```
 
-6. **Run on device/simulator**
+2. **Install on Android device/emulator**
 ```bash
-# iOS
-yarn ios
-
-# Android  
-yarn android
+adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### Environment Configuration
+4. **Launch the app**
+   - Open "Bife" app on your Android device
+   - Enjoy your adorable pink 3D Bonk's wife companion!
 
-Create a `.env` file with the following keys:
+### Development Workflow
 
 ```bash
-# AI Services
-GEMINI_API_KEY=your_gemini_api_key_here
-CLAUDE_API_KEY=your_claude_api_key_here
-
-# Google Cloud Services  
-GOOGLE_CLOUD_PROJECT_ID=your_project_id
-GOOGLE_APPLICATION_CREDENTIALS=path_to_service_account.json
-
-# Solana Configuration
-SOLANA_NETWORK=devnet
-SOLANA_RPC_URL=https://api.devnet.solana.com
-
-# Jupiter Aggregator
-JUPITER_API_URL=https://quote-api.jup.ag/v6
-
-# Porcupine Wake Word
-PORCUPINE_ACCESS_KEY=your_porcupine_access_key
-
-# Feature Flags
-ENABLE_BABYLON_VRM=true
-ENABLE_CROSS_CHAIN=false
-ENABLE_CLAUDE_FALLBACK=true
+# Make changes to android/app/src/main/assets/index.html
+# Rebuild and reinstall
+cd android
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ## 🎮 Usage

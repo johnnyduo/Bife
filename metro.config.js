@@ -9,17 +9,7 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const config = {
   resolver: {
     alias: {
-      '@': './src',
-      '@components': './src/components',
-      '@screens': './src/screens',
-      '@services': './src/services',
-      '@utils': './src/utils',
-      '@store': './src/store',
-      '@types': './src/types',
-      '@assets': './src/assets',
-      '@ai': './src/ai',
-      '@blockchain': './src/blockchain',
-      '@avatar': './src/avatar',
+      '@assets': './assets',
     },
   },
   transformer: {

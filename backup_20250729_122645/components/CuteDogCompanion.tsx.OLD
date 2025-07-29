@@ -1,0 +1,436 @@
+import React, { useEffect, useState } from 'react';
+import { View, TouchableOpacity, Animated, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+
+interface CuteDogCompanionProps {
+  isListening?: boolean;
+  isSpeaking?: boolean;
+  onPet?: () => void;
+}
+
+const CuteDogCompanion: React.FC<CuteDogCompanionProps> = ({ 
+  isListening = false, 
+  isSpeaking = false, 
+  onPet 
+}) => {
+  const [scaleAnim] = useState(new Animated.Value(1));
+  const [rotateAnim] = useState(new Animated.Value(0));
+  const [tailAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    // Gentle breathing animation
+    const breathingLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.03,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    breathingLoop.start();
+
+    return () => breathingLoop.stop();
+  }, []);
+
+  useEffect(() => {
+    if (isListening) {
+      // Subtle head tilt when listening
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(rotateAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isListening]);
+
+  useEffect(() => {
+    if (isSpeaking) {
+      // Tail wagging when speaking
+      const tailWag = Animated.loop(
+        Animated.sequence([
+          Animated.timing(tailAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(tailAnim, {
+            toValue: -1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      tailWag.start();
+    } else {
+      Animated.timing(tailAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isSpeaking]);
+
+  const handlePet = () => {
+    // Gentle happy bounce
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1.1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
+    onPet?.();
+  };
+
+  const headRotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '8deg'],
+  });
+
+  const tailRotate = tailAnim.interpolate({
+    inputRange: [-1, 1],
+    outputRange: ['-25deg', '25deg'],
+  });
+
+  return (
+    <TouchableOpacity onPress={handlePet} activeOpacity={0.9}>
+      <Animated.View
+        style={{
+          transform: [{ scale: scaleAnim }],
+        }}
+      >
+        <View style={styles.dogContainer}>
+          {/* Main Body */}
+          <View style={styles.dogBody}>
+            
+            {/* Head */}
+            <Animated.View style={[
+              styles.dogHead,
+              { transform: [{ rotate: headRotate }] }
+            ]}>
+              {/* Ears */}
+              <View style={[styles.ear, { left: 10, transform: [{ rotate: '-15deg' }] }]} />
+              <View style={[styles.ear, { right: 10, transform: [{ rotate: '15deg' }] }]} />
+              
+              {/* Face */}
+              <View style={styles.face}>
+                {/* Eyes */}
+                <View style={styles.eyesContainer}>
+                  <View style={styles.eye}>
+                    <View style={[styles.pupil, isListening && styles.pupilActive]} />
+                    <View style={styles.eyeshine} />
+                  </View>
+                  <View style={styles.eye}>
+                    <View style={[styles.pupil, isListening && styles.pupilActive]} />
+                    <View style={styles.eyeshine} />
+                  </View>
+                </View>
+                
+                {/* Snout */}
+                <View style={styles.snout}>
+                  <View style={styles.nose} />
+                  <View style={[styles.mouth, isSpeaking && styles.mouthOpen]} />
+                </View>
+              </View>
+            </Animated.View>
+            
+            {/* Body main */}
+            <View style={styles.bodyMain}>
+              {/* Chest marking */}
+              <View style={styles.chestMarking} />
+              
+              {/* Collar */}
+              <View style={styles.collar}>
+                <View style={styles.collarTag} />
+              </View>
+            </View>
+            
+            {/* Legs */}
+            <View style={styles.legsContainer}>
+              <View style={[styles.leg, { left: 20, top: 0 }]} />
+              <View style={[styles.leg, { right: 20, top: 0 }]} />
+              <View style={[styles.leg, { left: 35, top: 8 }]} />
+              <View style={[styles.leg, { right: 35, top: 8 }]} />
+            </View>
+            
+            {/* Tail */}
+            <Animated.View style={[
+              styles.tail,
+              { transform: [{ rotate: tailRotate }] }
+            ]}>
+              <View style={styles.tailTip} />
+            </Animated.View>
+          </View>
+          
+          {/* Status indicator */}
+          {(isListening || isSpeaking) && (
+            <View style={styles.statusIndicator}>
+              <View style={[
+                styles.statusDot,
+                isListening ? styles.listeningDot : styles.speakingDot
+              ]} />
+            </View>
+          )}
+        </View>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
+
+const styles = {
+  dogContainer: {
+    width: Math.min(320, width * 0.75),
+    height: Math.min(320, width * 0.75),
+    alignItems: 'center' as 'center',
+    justifyContent: 'center' as 'center',
+    position: 'relative' as 'relative',
+  },
+
+  dogBody: {
+    position: 'relative' as 'relative',
+    width: 320,
+    height: 320,
+    alignItems: 'center' as 'center',
+    justifyContent: 'center' as 'center',
+  },
+
+  dogHead: {
+    width: 85,
+    height: 75,
+    backgroundColor: '#D4A574', // Warm golden brown
+    borderRadius: 40,
+    position: 'absolute' as 'absolute',
+    top: 40,
+    alignItems: 'center' as 'center',
+    justifyContent: 'center' as 'center',
+    shadowColor: 'rgba(44, 24, 16, 0.15)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+
+  ear: {
+    width: 25,
+    height: 35,
+    backgroundColor: '#8B6F47', // Darker brown for ears
+    borderRadius: 20,
+    position: 'absolute' as 'absolute',
+    top: -10,
+    shadowColor: 'rgba(44, 24, 16, 0.1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 3,
+  },
+
+  face: {
+    alignItems: 'center' as 'center',
+    justifyContent: 'center' as 'center',
+    marginTop: 8,
+  },
+
+  eyesContainer: {
+    flexDirection: 'row' as 'row',
+    alignItems: 'center' as 'center',
+    marginBottom: 8,
+  },
+
+  eye: {
+    width: 18,
+    height: 18,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 9,
+    marginHorizontal: 8,
+    alignItems: 'center' as 'center',
+    justifyContent: 'center' as 'center',
+    shadowColor: 'rgba(44, 24, 16, 0.08)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 2,
+  },
+
+  pupil: {
+    width: 8,
+    height: 8,
+    backgroundColor: '#2C1810',
+    borderRadius: 4,
+  },
+
+  pupilActive: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#5D4E37',
+  },
+
+  eyeshine: {
+    width: 3,
+    height: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.5,
+    position: 'absolute' as 'absolute',
+    top: 4,
+    left: 6,
+  },
+
+  snout: {
+    alignItems: 'center' as 'center',
+  },
+
+  nose: {
+    width: 8,
+    height: 6,
+    backgroundColor: '#2C1810',
+    borderRadius: 4,
+    marginBottom: 3,
+  },
+
+  mouth: {
+    width: 14,
+    height: 3,
+    backgroundColor: '#2C1810',
+    borderRadius: 2,
+    opacity: 0.8,
+  },
+
+  mouthOpen: {
+    height: 8,
+    width: 12,
+    borderRadius: 6,
+    backgroundColor: '#8B6F47',
+  },
+
+  bodyMain: {
+    width: 100,
+    height: 85,
+    backgroundColor: '#D4A574',
+    borderRadius: 45,
+    position: 'absolute' as 'absolute',
+    top: 100,
+    alignItems: 'center' as 'center',
+    shadowColor: 'rgba(44, 24, 16, 0.15)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+
+  chestMarking: {
+    width: 30,
+    height: 40,
+    backgroundColor: '#F7F3F0', // Light cream color
+    borderRadius: 20,
+    marginTop: 15,
+    opacity: 0.9,
+  },
+
+  collar: {
+    width: 80,
+    height: 12,
+    backgroundColor: '#6B4423', // Dark brown collar
+    borderRadius: 6,
+    position: 'absolute' as 'absolute',
+    top: 8,
+    alignItems: 'center' as 'center',
+    justifyContent: 'center' as 'center',
+  },
+
+  collarTag: {
+    width: 8,
+    height: 8,
+    backgroundColor: '#D4A574',
+    borderRadius: 4,
+  },
+
+  legsContainer: {
+    position: 'absolute' as 'absolute',
+    bottom: 60,
+    width: 120,
+    height: 40,
+  },
+
+  leg: {
+    width: 16,
+    height: 35,
+    backgroundColor: '#D4A574',
+    borderRadius: 8,
+    position: 'absolute' as 'absolute',
+    shadowColor: 'rgba(44, 24, 16, 0.1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 3,
+  },
+
+  tail: {
+    width: 35,
+    height: 15,
+    backgroundColor: '#8B6F47',
+    borderRadius: 15,
+    position: 'absolute' as 'absolute',
+    right: -5,
+    top: 120,
+    transformOrigin: '10% 50%',
+    shadowColor: 'rgba(44, 24, 16, 0.1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 3,
+  },
+
+  tailTip: {
+    width: 12,
+    height: 12,
+    backgroundColor: '#F7F3F0',
+    borderRadius: 6,
+    position: 'absolute' as 'absolute',
+    right: 2,
+    top: 1.5,
+  },
+
+  statusIndicator: {
+    position: 'absolute' as 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 15,
+    padding: 8,
+    shadowColor: 'rgba(44, 24, 16, 0.1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+  },
+
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+
+  listeningDot: {
+    backgroundColor: '#7A8471', // Sage green for listening
+  },
+
+  speakingDot: {
+    backgroundColor: '#C7956D', // Warm amber for speaking
+  },
+};
+
+export default CuteDogCompanion;

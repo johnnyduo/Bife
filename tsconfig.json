@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": ["es2017", "es6", "dom"],
+    "lib": [
+      "es2017",
+      "es6",
+      "dom"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -20,17 +24,39 @@
     "exactOptionalPropertyTypes": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@screens/*": ["src/screens/*"],
-      "@services/*": ["src/services/*"],
-      "@utils/*": ["src/utils/*"],
-      "@store/*": ["src/store/*"],
-      "@types/*": ["src/types/*"],
-      "@assets/*": ["src/assets/*"],
-      "@ai/*": ["src/ai/*"],
-      "@blockchain/*": ["src/blockchain/*"],
-      "@avatar/*": ["src/avatar/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "@screens/*": [
+        "src/screens/*"
+      ],
+      "@services/*": [
+        "src/services/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@store/*": [
+        "src/store/*"
+      ],
+      "@types/*": [
+        "src/types/*"
+      ],
+      "@assets/*": [
+        "src/assets/*"
+      ],
+      "@ai/*": [
+        "src/ai/*"
+      ],
+      "@blockchain/*": [
+        "src/blockchain/*"
+      ],
+      "@avatar/*": [
+        "src/avatar/*"
+      ]
     }
   },
   "include": [
@@ -44,5 +70,6 @@
     "ios",
     "dist",
     "build"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

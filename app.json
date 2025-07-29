@@ -1,4 +1,35 @@
 {
-  "name": "Bife",
-  "displayName": "Bife - Voice-First AI DeFi Companion"
+  "expo": {
+    "name": "Bife",
+    "slug": "bife-ai-companion",
+    "version": "2.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF69B4"
+    },
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "bundler": "webpack",
+      "output": "static",
+      "favicon": "./assets/favicon.ico"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bife.aicompanion"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF69B4"
+      },
+      "package": "com.bife.aicompanion"
+    }
+  }
 }
