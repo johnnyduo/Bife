@@ -1029,6 +1029,106 @@ class MainActivity : Activity() {
             transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(255, 105, 180, 0.3);
         }
+
+        /* Big Shiba NFT Artist Container (matching Unicorn styling) */
+        #shiba-nft-container {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: linear-gradient(135deg, 
+                rgba(255, 165, 0, 0.1) 0%,
+                rgba(255, 140, 0, 0.1) 50%,
+                rgba(255, 69, 0, 0.1) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            box-shadow: 
+                0 8px 32px rgba(31, 38, 135, 0.37),
+                0 0 25px rgba(255, 165, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        #shiba-nft-container:hover {
+            transform: scale(1.02);
+            box-shadow: 
+                0 12px 40px rgba(31, 38, 135, 0.5),
+                0 0 35px rgba(255, 165, 0, 0.4);
+        }
+
+        #shiba-nft-container.creating {
+            border-color: var(--defi-green);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        #shiba-nft-animation {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Shiba Artist Status integrated */
+        .shiba-artist-status {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 165, 0, 0.9);
+            color: #4a4a4a;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        /* Shiba Artist Controls (matching Unicorn controls) */
+        .shiba-artist-controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 25px 0;
+            width: 100%;
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .shiba-artist-controls .action-button {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 13px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #ff8c00, #ffa500);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-width: 110px;
+            text-align: center;
+        }
+
+        .shiba-artist-controls .action-button.secondary {
+            background: linear-gradient(135deg, #ff6347, #ff4500);
+        }
+
+        .shiba-artist-controls .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.3);
         }
 
         .companion-conversation .gemini-response #geminiText {
@@ -1606,19 +1706,37 @@ class MainActivity : Activity() {
 
         <!-- NFT Studio Page -->
         <div id="nft-page" class="page">
-            <!-- Shiba NFT Artist -->
-            <div class="nft-creator" style="text-align: center; margin-bottom: 20px;">
-                <div class="shiba-companion floating" id="shiba-nft">
-                    <div style="color: var(--text-secondary); text-align: center; font-size: 12px;">
-                        Loading Shiba artist...
-                    </div>
+            <!-- Shiba NFT Artist Companion Section (matching Portfolio layout) -->
+            <div class="portfolio-companion-section">
+                <div class="portfolio-companion-header">
+                    <div class="companion-title">🎨 Shiba NFT Artist</div>
+                    <div class="companion-subtitle">Your creative AI-powered NFT companion</div>
                 </div>
-                <h3 style="color: var(--text-primary); font-family: var(--font-display); margin: 10px 0;">
-                    🎨 Shiba NFT Artist
-                </h3>
-                <p style="color: var(--text-secondary); font-size: 12px;">
-                    Creative Shiba helps you mint amazing NFTs!
-                </p>
+                
+                <!-- Big Shiba NFT Artist Animation (matching Unicorn container) -->
+                <div id="shiba-nft-container" onclick="animateShiba('nft')">
+                    <div id="shiba-nft-animation">
+                        <div style="color: var(--text-secondary); text-align: center; font-size: 14px;">
+                            Loading your creative companion...
+                        </div>
+                    </div>
+                    
+                    <!-- Status integrated into the container -->
+                    <div class="shiba-artist-status" id="shibaArtistStatus">Ready to create ✨</div>
+                </div>
+                
+                <!-- Shiba Artist Controls (matching Unicorn controls) -->
+                <div class="shiba-artist-controls">
+                    <button class="action-button" onclick="voiceDescribeNFT()">
+                        🎤 Voice Describe
+                    </button>
+                    <button class="action-button secondary" onclick="generateNFTArt()">
+                        🎨 Generate Art
+                    </button>
+                    <button class="action-button" onclick="createNFT()">
+                        ✨ Create NFT
+                    </button>
+                </div>
             </div>
 
             <div class="nft-creator">
@@ -2083,7 +2201,7 @@ class MainActivity : Activity() {
             } else if (pageId === 'trading') {
                 initShibaAnimation('trading');
             } else if (pageId === 'nft') {
-                initShibaAnimation('nft');
+                initShibaNFTAnimation();
             } else if (pageId === 'portfolio') {
                 initUnicornAnimation();
             } else if (pageId === 'settings') {
@@ -2174,19 +2292,39 @@ class MainActivity : Activity() {
             }, 5000);
         }
 
-        // Shiba Artist Reactions
+        // Enhanced Shiba Artist Reactions with status updates
         function shibaArtistReactions() {
             if (!shibaAnimations.nft) return;
             
             setInterval(() => {
-                const container = document.getElementById('shiba-nft');
+                const container = document.getElementById('shiba-nft-container');
+                const statusElement = document.getElementById('shibaArtistStatus');
+                
                 if (container && Math.random() > 0.8) {
                     // Creative inspiration flash
                     container.style.filter = 'drop-shadow(0 0 25px var(--cyber-cyan))';
                     container.style.transform = 'scale(1.1) rotate(5deg)';
+                    
+                    // Update status during inspiration
+                    if (statusElement) {
+                        const inspirationMessages = [
+                            'Creative spark! ✨',
+                            'Artistic vision flowing! 🎨',
+                            'NFT inspiration detected! 💡',
+                            'Creative energy surging! ⚡'
+                        ];
+                        const randomMessage = inspirationMessages[Math.floor(Math.random() * inspirationMessages.length)];
+                        statusElement.textContent = randomMessage;
+                    }
+                    
                     setTimeout(() => {
                         container.style.filter = 'none';
                         container.style.transform = 'scale(1) rotate(0deg)';
+                        
+                        // Reset status
+                        if (statusElement) {
+                            statusElement.textContent = 'Ready to create ✨';
+                        }
                     }, 1200);
                 }
             }, 7000);
@@ -2210,14 +2348,28 @@ class MainActivity : Activity() {
 
         // Animate specific Shiba based on page
         function animateShiba(pageType) {
-            const container = document.getElementById('shiba-' + pageType);
-            if (container && shibaAnimations[pageType]) {
-                container.style.transform = 'scale(1.2) rotate(10deg)';
-                container.style.filter = 'drop-shadow(0 0 30px var(--bonk-orange))';
-                setTimeout(() => {
-                    container.style.transform = 'scale(1) rotate(0deg)';
-                    container.style.filter = 'none';
-                }, 1500);
+            if (pageType === 'nft') {
+                // Use the new NFT container
+                const container = document.getElementById('shiba-nft-container');
+                if (container && shibaAnimations[pageType]) {
+                    container.style.transform = 'scale(1.2) rotate(10deg)';
+                    container.style.filter = 'drop-shadow(0 0 30px var(--bonk-orange))';
+                    setTimeout(() => {
+                        container.style.transform = 'scale(1) rotate(0deg)';
+                        container.style.filter = 'none';
+                    }, 1500);
+                }
+            } else {
+                // Use the original containers for other pages
+                const container = document.getElementById('shiba-' + pageType);
+                if (container && shibaAnimations[pageType]) {
+                    container.style.transform = 'scale(1.2) rotate(10deg)';
+                    container.style.filter = 'drop-shadow(0 0 30px var(--bonk-orange))';
+                    setTimeout(() => {
+                        container.style.transform = 'scale(1) rotate(0deg)';
+                        container.style.filter = 'none';
+                    }, 1500);
+                }
             }
         }
 
@@ -2424,8 +2576,16 @@ class MainActivity : Activity() {
 
         // NFT Voice Functions
         function voiceDescribeNFT() {
+            const statusElement = document.getElementById('shibaArtistStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Listening for description... 🎤';
+            }
+            
             if (!recognition) {
                 alert('Voice recognition not available');
+                if (statusElement) {
+                    statusElement.textContent = 'Ready to create ✨';
+                }
                 return;
             }
             
@@ -2433,12 +2593,33 @@ class MainActivity : Activity() {
                 const transcript = event.results[event.results.length - 1][0].transcript;
                 document.getElementById('nftDescription').value = transcript;
                 console.log('🎨 NFT voice description:', transcript);
+                
+                if (statusElement) {
+                    statusElement.textContent = 'Description captured! ✨';
+                    setTimeout(() => {
+                        statusElement.textContent = 'Ready to create ✨';
+                    }, 2000);
+                }
+            };
+            
+            recognition.onerror = function() {
+                if (statusElement) {
+                    statusElement.textContent = 'Voice error - try again';
+                    setTimeout(() => {
+                        statusElement.textContent = 'Ready to create ✨';
+                    }, 2000);
+                }
             };
             
             recognition.start();
         }
 
         function generateNFTArt() {
+            const statusElement = document.getElementById('shibaArtistStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Generating artwork... 🎨';
+            }
+            
             const description = document.getElementById('nftDescription').value;
             const preview = document.getElementById('nftPreview');
             
@@ -2456,37 +2637,48 @@ class MainActivity : Activity() {
                         Based on: "' + description + '"
                     </div>
                 `;
+                
+                if (statusElement) {
+                    statusElement.textContent = 'Artwork ready! ✨';
+                    setTimeout(() => {
+                        statusElement.textContent = 'Ready to create ✨';
+                    }, 3000);
+                }
             }, 2000);
         }
 
         function createNFT() {
+            const statusElement = document.getElementById('shibaArtistStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Minting NFT... 🔨';
+            }
+            
             const name = document.getElementById('nftName').value;
             const description = document.getElementById('nftDescription').value;
             
             if (!name || !description) {
                 alert('Please fill in NFT name and description');
+                if (statusElement) {
+                    statusElement.textContent = 'Ready to create ✨';
+                }
                 return;
             }
             
             console.log('🎨 Creating NFT:', name, description);
-            showNotification('NFT Created', 'Successfully minted: ' + name);
             
-            // Only animate the current page's companion
-            const currentPage = document.querySelector('.page.active').id;
-            if (currentPage === 'companion-page') {
-                // Animate astronaut dog on companion page
-                const container = document.getElementById('astronaut-animation');
-                if (container) {
-                    container.style.transform = 'scale(1.1) rotate(5deg)';
-                    container.style.filter = 'drop-shadow(0 0 30px var(--bonk-orange))';
+            // Animate the Shiba NFT artist
+            animateShiba('nft');
+            
+            setTimeout(() => {
+                showNotification('NFT Created', 'Successfully minted: ' + name);
+                
+                if (statusElement) {
+                    statusElement.textContent = 'NFT created! 🎉';
                     setTimeout(() => {
-                        container.style.transform = 'scale(1) rotate(0deg)';
-                        container.style.filter = 'none';
-                    }, 1000);
+                        statusElement.textContent = 'Ready to create ✨';
+                    }, 4000);
                 }
-            } else if (currentPage === 'nft-page') {
-                animateShiba('nft');
-            }
+            }, 1500);
         }
 
         function voiceCreateNFT() {
@@ -2937,6 +3129,127 @@ class MainActivity : Activity() {
             const statusElement = document.getElementById('unicornStatus');
             if (statusElement) {
                 statusElement.textContent = 'Ready to analyze ⚡';
+            }
+        }
+
+        // Initialize Shiba NFT Artist Animation (matching Portfolio structure)
+        function initShibaNFTAnimation() {
+            console.log('🎨 Initializing Shiba NFT Artist...');
+            const container = document.getElementById('shiba-nft-animation');
+            
+            if (!container) {
+                console.error('❌ Shiba NFT animation container not found');
+                return;
+            }
+            
+            // Show loading state
+            container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; font-size: 14px; padding: 50px;">🎨 Loading your creative companion...</div>';
+            
+            ensureLottieLoaded().then(() => {
+                if (!shibaAnimationData || shibaAnimationData === 'null') {
+                    throw new Error('Shiba animation data not found');
+                }
+                
+                console.log('✨ Loading authentic Shiba NFT Artist animation...');
+                
+                let animationData;
+                try {
+                    animationData = typeof shibaAnimationData === 'string' ? 
+                        JSON.parse(shibaAnimationData) : shibaAnimationData;
+                } catch (parseError) {
+                    throw new Error('Invalid Shiba JSON data');
+                }
+                
+                // Device performance detection
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                const isHighPerformance = gl && gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 4096;
+                
+                // Clear loading message
+                container.innerHTML = '';
+                
+                // Optimize settings based on device
+                const optimizedSettings = {
+                    container: container,
+                    renderer: isHighPerformance ? 'svg' : 'canvas',
+                    loop: true,
+                    autoplay: true,
+                    animationData: animationData,
+                    rendererSettings: {
+                        preserveAspectRatio: 'xMidYMid meet',
+                        progressiveLoad: true,
+                        hideOnTransparent: true,
+                        scaleMode: isHighPerformance ? 'noScale' : 'showAll',
+                        clearCanvas: !isHighPerformance
+                    }
+                };
+                
+                // Destroy existing animation if present
+                if (shibaAnimations.nft) {
+                    shibaAnimations.nft.destroy();
+                    shibaAnimations.nft = null;
+                }
+                
+                shibaAnimations.nft = lottie.loadAnimation(optimizedSettings);
+                
+                // Standard playback speed
+                shibaAnimations.nft.setSpeed(1.0);
+                
+                shibaAnimations.nft.addEventListener('DOMLoaded', function() {
+                    console.log('✅ Shiba NFT Artist ready!');
+                    
+                    // Update status
+                    const statusElement = document.getElementById('shibaArtistStatus');
+                    if (statusElement) {
+                        statusElement.textContent = 'Ready to create ✨';
+                    }
+                    
+                    // Add creative floating effect
+                    setInterval(() => {
+                        if (shibaAnimations.nft && container) {
+                            const creativeFloat = Math.sin(Date.now() / 1500) * 6;
+                            const artisticRotation = Math.sin(Date.now() / 2500) * 2;
+                            container.style.transform = 'translateY(' + creativeFloat + 'px) rotate(' + artisticRotation + 'deg)';
+                        }
+                    }, 50);
+                    
+                    // Start creative inspiration moments
+                    shibaArtistReactions();
+                });
+                
+                shibaAnimations.nft.addEventListener('data_failed', function() {
+                    console.error('❌ Shiba NFT animation failed to load');
+                    showFallbackShiba(container);
+                });
+                
+            }).catch(error => {
+                console.error('❌ Failed to initialize Shiba NFT animation:', error);
+                showFallbackShiba(container);
+            });
+        }
+        
+        // Simple fallback Shiba display when animation fails
+        function showFallbackShiba(container) {
+            container.innerHTML = `
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100%;
+                    color: var(--text-primary);
+                    text-align: center;
+                    padding: 20px;
+                ">
+                    <div style="font-size: 60px; margin-bottom: 15px;">🐕</div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Shiba NFT Artist</div>
+                    <div style="font-size: 14px; color: var(--text-secondary);">Creative Companion</div>
+                </div>
+            `;
+            
+            const statusElement = document.getElementById('shibaArtistStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Ready to create ✨';
             }
         }
 
