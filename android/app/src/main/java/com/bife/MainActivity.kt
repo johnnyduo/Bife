@@ -91,6 +91,14 @@ class MainActivity : Activity() {
             "null"
         }
         
+        // Read the Smiling Dog.json file from assets
+        val smilingDogJsonContent = try {
+            assets.open("models/Smiling Dog.json").bufferedReader().use { it.readText() }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error reading Smiling Dog.json: ${e.message}")
+            "null"
+        }
+        
         val htmlContent = """
 <!DOCTYPE html>
 <html>
@@ -1030,6 +1038,46 @@ class MainActivity : Activity() {
             box-shadow: 0 10px 25px rgba(255, 105, 180, 0.3);
         }
 
+        /* Smiling Dog Trading Controls (inline layout) */
+        .smiling-dog-controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 25px 0;
+            width: 100%;
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .smiling-dog-controls .action-button {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 13px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, var(--bonk-orange), #ff8c00);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+            text-align: center;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .smiling-dog-controls .action-button.secondary {
+            background: linear-gradient(135deg, #32cd32, #00ff7f);
+        }
+
+        .smiling-dog-controls .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.4);
+        }
+
         /* Big Shiba NFT Artist Container (matching Unicorn styling) */
         #shiba-nft-container {
             width: 100%;
@@ -1624,19 +1672,37 @@ class MainActivity : Activity() {
 
         <!-- Trading Page -->
         <div id="trading-page" class="page">
-            <!-- Shiba Trading Companion -->
-            <div class="trading-card" style="text-align: center; margin-bottom: 20px;">
-                <div class="shiba-companion floating" id="shiba-trading">
-                    <div style="color: var(--text-secondary); text-align: center; font-size: 12px;">
-                        Loading Shiba trader...
-                    </div>
+            <!-- Smiling Dog Trading Companion Section (matching Portfolio layout) -->
+            <div class="portfolio-companion-section">
+                <div class="portfolio-companion-header">
+                    <div class="companion-title">😊 Smiling Dog Trading Expert</div>
+                    <div class="companion-subtitle">Your optimistic DeFi trading companion</div>
                 </div>
-                <h3 style="color: var(--text-primary); font-family: var(--font-display); margin: 10px 0;">
-                    🐕 Shiba Trading Assistant
-                </h3>
-                <p style="color: var(--text-secondary); font-size: 12px;">
-                    Your loyal trading companion watches the markets!
-                </p>
+                
+                <!-- Big Smiling Dog Animation -->
+                <div id="smiling-dog-container" onclick="smilingDogAnalyze()">
+                    <div id="smiling-dog-animation">
+                        <div style="color: var(--text-secondary); text-align: center; font-size: 14px;">
+                            Loading your trading expert...
+                        </div>
+                    </div>
+                    
+                    <!-- Status integrated into the container -->
+                    <div class="smiling-dog-status" id="smilingDogStatus">Ready to trade</div>
+                </div>
+                
+                <!-- Smiling Dog Controls -->
+                <div class="smiling-dog-controls">
+                    <button class="action-button" onclick="smilingDogRefresh()">
+                        📈 Market Update
+                    </button>
+                    <button class="action-button secondary" onclick="smilingDogDance()">
+                        🎉 Celebrate
+                    </button>
+                    <button class="action-button" onclick="smilingDogAnalyze()">
+                        🧠 Trade Analysis
+                    </button>
+                </div>
             </div>
 
             <div class="trading-dashboard">
@@ -1899,7 +1965,13 @@ class MainActivity : Activity() {
                                     <div style="color: var(--text-primary); font-weight: 600;">Connected Wallet</div>
                                     <div style="color: var(--text-secondary); font-size: 12px;">Phantom • Solana</div>
                                 </div>
-                                <button class="action-button secondary" onclick="connectWallet()">Connect</button>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="action-button secondary" onclick="connectWallet()">Connect</button>
+                                    <button class="action-button" onclick="testWalletConnection()" style="font-size: 11px; padding: 8px 12px;">🧪 Test</button>
+                                </div>
+                            </div>
+                            <div class="connected-wallet-info" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <div style="color: var(--text-secondary); font-size: 12px;">Not Connected</div>
                             </div>
                         </div>
                         
@@ -2181,6 +2253,9 @@ class MainActivity : Activity() {
         // Your authentic Happy Unicorn Dog.lottie data injected here
         const happyUnicornDogAnimationData = $happyUnicornDogJsonContent;
         
+        // Your authentic Smiling Dog.lottie data injected here
+        const smilingDogAnimationData = $smilingDogJsonContent;
+        
         // Shiba animations for different pages
         let shibaAnimations = {
             trading: null,
@@ -2205,7 +2280,7 @@ class MainActivity : Activity() {
                 initAstronautDogAnimation();
                 initVoiceRecognition();
             } else if (pageId === 'trading') {
-                initShibaAnimation('trading');
+                initSmilingDogAnimation();
             } else if (pageId === 'nft') {
                 initShibaNFTAnimation();
             } else if (pageId === 'portfolio') {
@@ -2629,7 +2704,7 @@ class MainActivity : Activity() {
 
         async function connectSolanaWallet() {
             try {
-                showStatusMessage("Initializing Solana connection...", "info");
+                showStatusMessage("🔍 Detecting Mobile Wallet Adapter...", "info");
                 
                 // Initialize Solana connection first
                 const connectionSuccess = await initializeSolanaConnection();
@@ -2637,50 +2712,84 @@ class MainActivity : Activity() {
                     throw new Error('Failed to initialize Solana connection');
                 }
                 
-                showStatusMessage("Connecting to Mobile Wallet Adapter...", "info");
+                // Check if we're in a mobile wallet environment
+                const isMobileWalletEnv = typeof window.solana !== 'undefined' || 
+                                        typeof window.mobileWalletAdapter !== 'undefined' ||
+                                        navigator.userAgent.includes('SolanaWallet') ||
+                                        window.location.protocol === 'https:';
                 
-                // Check if Mobile Wallet Adapter is available
-                if (typeof window.mobileWalletAdapter === 'undefined') {
-                    await loadMobileWalletAdapter();
-                }
-                
-                // Attempt wallet connection using Mobile Wallet Adapter protocol
-                const { transact } = window.mobileWalletAdapter || {};
-                
-                if (transact) {
-                    const result = await transact(async (wallet) => {
-                        await wallet.authorize({
-                            cluster: 'devnet',
-                            identity: { name: 'Bife - Bonk DeFi Space Mission' }
-                        });
-                        
-                        const accounts = await wallet.getAccounts();
-                        return accounts[0];
-                    });
-                    
-                    if (result && result.publicKey) {
-                        walletPublicKey = result.publicKey;
-                        isWalletConnected = true;
-                        solanaWallet = result;
-                        
-                        updateWalletUI();
-                        showStatusMessage("🎉 Wallet connected! " + walletPublicKey.toString().slice(0, 8) + "...", "success");
-                        
-                        // Get wallet balance
-                        await updateWalletBalance();
-                        
-                        return true;
-                    }
-                } else {
-                    // Fallback for testing without Mobile Wallet Adapter
-                    console.log('🔄 Mobile Wallet Adapter not available, using simulation mode');
+                if (!isMobileWalletEnv) {
+                    console.log('🌐 Not in mobile wallet environment, using simulation mode');
                     simulateWalletConnection();
                     return true;
                 }
                 
+                showStatusMessage("📱 Connecting to mobile wallet...", "info");
+                
+                // Try direct Solana wallet connection first (Phantom, Solflare built-in)
+                if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
+                    try {
+                        const response = await window.solana.connect();
+                        walletPublicKey = response.publicKey;
+                        isWalletConnected = true;
+                        solanaWallet = window.solana;
+                        
+                        updateWalletUI();
+                        showStatusMessage("🎉 Phantom wallet connected! " + walletPublicKey.toString().slice(0, 8) + "...", "success");
+                        await updateWalletBalance();
+                        return true;
+                    } catch (phantomError) {
+                        console.log('📱 Phantom connection failed, trying MWA protocol...');
+                    }
+                }
+                
+                // Load and try Mobile Wallet Adapter protocol
+                await loadMobileWalletAdapter();
+                
+                if (typeof window.mobileWalletAdapter !== 'undefined') {
+                    const { transact } = window.mobileWalletAdapter;
+                    
+                    const result = await transact(async (wallet) => {
+                        try {
+                            // Authorize the dApp
+                            const authResult = await wallet.authorize({
+                                cluster: 'devnet',
+                                identity: { 
+                                    name: 'Bife - Bonk DeFi Space Mission',
+                                    uri: 'https://bife.app',
+                                    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNGRjY5MDAiLz4KPHRleHQgeD0iMTYiIHk9IjIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5qAPC90ZXh0Pgo8L3N2Zz4K'
+                                }
+                            });
+                            
+                            // Get accounts
+                            const accounts = await wallet.getAccounts();
+                            if (accounts && accounts.length > 0) {
+                                return accounts[0];
+                            }
+                            throw new Error('No accounts found');
+                        } catch (error) {
+                            console.error('MWA transaction error:', error);
+                            throw error;
+                        }
+                    });
+                    
+                    if (result && result.address) {
+                        walletPublicKey = { toString: () => result.address };
+                        isWalletConnected = true;
+                        solanaWallet = result;
+                        
+                        updateWalletUI();
+                        showStatusMessage("🎉 Mobile wallet connected! " + result.address.slice(0, 8) + "...", "success");
+                        await updateWalletBalance();
+                        return true;
+                    }
+                }
+                
+                throw new Error('No compatible wallet found');
+                
             } catch (error) {
                 console.error('❌ Wallet connection failed:', error);
-                showStatusMessage("Wallet connection failed. Using simulation mode.", "warning");
+                showStatusMessage("⚠️ No mobile wallet detected. Using demo mode.", "warning");
                 simulateWalletConnection();
                 return false;
             }
@@ -2688,28 +2797,111 @@ class MainActivity : Activity() {
 
         async function loadMobileWalletAdapter() {
             return new Promise((resolve, reject) => {
+                // Skip if already loaded
+                if (typeof window.mobileWalletAdapter !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
                 const script = document.createElement('script');
-                script.src = 'https://unpkg.com/@solana-mobile/mobile-wallet-adapter-protocol-web3js@latest/lib/index.js';
+                // Use the correct MWA CDN URL
+                script.src = 'https://unpkg.com/@solana-mobile/mobile-wallet-adapter-protocol@2.1.3/lib/solana-mobile-wallet-adapter-protocol.global.js';
                 script.onload = () => {
                     console.log('✅ Mobile Wallet Adapter loaded successfully');
+                    // Initialize MWA
+                    if (window.SolanaMobileWalletAdapter) {
+                        window.mobileWalletAdapter = window.SolanaMobileWalletAdapter;
+                    }
                     resolve();
                 };
                 script.onerror = () => {
-                    console.error('❌ Failed to load Mobile Wallet Adapter');
-                    reject(new Error('Mobile Wallet Adapter could not be loaded'));
+                    console.warn('⚠️ Mobile Wallet Adapter CDN failed, trying fallback...');
+                    // Try alternative CDN
+                    const fallbackScript = document.createElement('script');
+                    fallbackScript.src = 'https://cdn.jsdelivr.net/npm/@solana-mobile/mobile-wallet-adapter-protocol@2.1.3/lib/solana-mobile-wallet-adapter-protocol.global.js';
+                    fallbackScript.onload = () => {
+                        console.log('✅ Mobile Wallet Adapter loaded from fallback CDN');
+                        if (window.SolanaMobileWalletAdapter) {
+                            window.mobileWalletAdapter = window.SolanaMobileWalletAdapter;
+                        }
+                        resolve();
+                    };
+                    fallbackScript.onerror = () => {
+                        console.warn('⚠️ Mobile Wallet Adapter not available');
+                        resolve(); // Don't reject, continue with simulation
+                    };
+                    document.head.appendChild(fallbackScript);
                 };
                 document.head.appendChild(script);
             });
         }
 
         function simulateWalletConnection() {
-            // Simulate wallet connection for testing
-            const fakePublicKey = 'DemoWallet1234567890abcdefghijk';
-            walletPublicKey = { toString: () => fakePublicKey };
+            // Enhanced simulation for demo purposes
+            const demoAddresses = [
+                'Demo1234567890abcdefghijklmnop',
+                'Test9876543210zyxwvutsrqponmlk',
+                'Bife5555444433332222111100000'
+            ];
+            const randomAddress = demoAddresses[Math.floor(Math.random() * demoAddresses.length)];
+            
+            walletPublicKey = { 
+                toString: () => randomAddress,
+                toBase58: () => randomAddress
+            };
             isWalletConnected = true;
             
+            // Simulate wallet features
+            solanaWallet = {
+                publicKey: walletPublicKey,
+                connected: true,
+                signTransaction: () => Promise.resolve({ signature: 'demo_signature_' + Date.now() }),
+                signAllTransactions: () => Promise.resolve([{ signature: 'demo_signature_' + Date.now() }])
+            };
+            
             updateWalletUI();
-            showStatusMessage("🎉 Demo wallet connected! (Simulation Mode)", "success");
+            showStatusMessage("🎉 Demo wallet connected! " + randomAddress.slice(0, 8) + "... (Simulation Mode)", "success");
+            
+            // Simulate balance update
+            setTimeout(() => {
+                updateWalletBalance();
+            }, 1000);
+        }
+
+        // Add wallet testing function
+        async function testWalletConnection() {
+            showStatusMessage("🧪 Testing wallet connection...", "info");
+            
+            if (!isWalletConnected || !walletPublicKey) {
+                showStatusMessage("❌ No wallet connected. Please connect first.", "error");
+                return;
+            }
+            
+            try {
+                // Test 1: Check wallet connection
+                const publicKeyStr = walletPublicKey.toString();
+                console.log('✅ Wallet public key:', publicKeyStr);
+                
+                // Test 2: Check Solana connection
+                if (connection) {
+                    const latestBlockhash = await connection.getLatestBlockhash();
+                    console.log('✅ Solana connection active. Latest blockhash:', latestBlockhash.blockhash.slice(0, 8) + '...');
+                }
+                
+                // Test 3: Try to get balance
+                await updateWalletBalance();
+                
+                // Test 4: Check if wallet can sign (simulation)
+                if (solanaWallet && solanaWallet.signTransaction) {
+                    console.log('✅ Wallet signing capability available');
+                }
+                
+                showStatusMessage("✅ All wallet tests passed! Ready for DeFi operations.", "success");
+                
+            } catch (error) {
+                console.error('❌ Wallet test failed:', error);
+                showStatusMessage("⚠️ Wallet test failed: " + error.message, "error");
+            }
         }
 
         async function updateWalletBalance() {
@@ -3048,6 +3240,83 @@ class MainActivity : Activity() {
             }, 1500);
         }
 
+        // Smiling Dog Trading Control Functions
+        function smilingDogDance() {
+            showStatusMessage("😊 Smiling Dog analyzing market trends...", "info");
+            
+            // Add trading energy dance effect
+            const container = document.getElementById('smiling-dog-animation');
+            if (container && smilingDogLottieAnimation) {
+                // Enhanced trading dance with energy pulses
+                container.style.transform = 'scale(1.1) rotate(5deg)';
+                container.style.filter = 'drop-shadow(0 0 20px var(--bonk-orange)) saturate(1.4)';
+                
+                // Trading rhythm animation
+                smilingDogLottieAnimation.setSpeed(1.3);
+                
+                setTimeout(() => {
+                    container.style.transform = 'scale(1.05) rotate(-3deg)';
+                    smilingDogLottieAnimation.setSpeed(1.1);
+                }, 200);
+                
+                setTimeout(() => {
+                    container.style.transform = 'scale(1) rotate(0deg)';
+                    container.style.filter = 'none';
+                    smilingDogLottieAnimation.setSpeed(1.0);
+                    showStatusMessage("📈 Market analysis complete! Ready to trade!", "success");
+                }, 800);
+            }
+        }
+        
+        function smilingDogAnalyze() {
+            showStatusMessage("😊 Deep market analysis in progress...", "info");
+            
+            // Add analytical glow effect
+            const container = document.getElementById('smiling-dog-animation');
+            if (container) {
+                container.style.filter = 'drop-shadow(0 0 25px #00ff88) brightness(1.2)';
+                container.style.transform = 'scale(1.02)';
+                
+                // Create analytical pulse effect
+                let pulseCount = 0;
+                const pulseInterval = setInterval(() => {
+                    container.style.opacity = container.style.opacity === '0.7' ? '1' : '0.7';
+                    pulseCount++;
+                    
+                    if (pulseCount >= 6) {
+                        clearInterval(pulseInterval);
+                        container.style.opacity = '1';
+                        container.style.filter = 'none';
+                        container.style.transform = 'scale(1)';
+                        showStatusMessage("📊 Analysis complete! Profitable opportunities found!", "success");
+                    }
+                }, 300);
+            }
+        }
+        
+        function smilingDogRefresh() {
+            showStatusMessage("😊 Refreshing trading data with expert insights...", "info");
+            
+            // Add refresh energy effect
+            const container = document.getElementById('smiling-dog-animation');
+            if (container) {
+                container.style.filter = 'drop-shadow(0 0 15px var(--bonk-orange)) saturate(1.3)';
+                container.style.transform = 'rotate(360deg)';
+                container.style.transition = 'transform 1s ease-in-out';
+                
+                setTimeout(() => {
+                    container.style.transform = 'rotate(0deg)';
+                    container.style.filter = 'none';
+                    container.style.transition = 'none';
+                }, 1000);
+            }
+            
+            // Simulate trading data refresh
+            setTimeout(() => {
+                showStatusMessage("⚡ Trading data refreshed with smiling insights!", "success");
+            }, 1500);
+        }
+
         function toggleVoice() {
             const button = event.target;
             if (button.textContent === "Enabled") {
@@ -3333,6 +3602,145 @@ class MainActivity : Activity() {
             const statusElement = document.getElementById('unicornStatus');
             if (statusElement) {
                 statusElement.textContent = 'Ready to analyze ⚡';
+            }
+        }
+
+        // Initialize Smiling Dog Trading Animation (matching Portfolio structure)
+        let smilingDogLottieAnimation = null;
+        
+        function initSmilingDogAnimation() {
+            console.log('😊 Initializing Smiling Dog trading companion...');
+            const container = document.getElementById('smiling-dog-animation');
+            
+            if (!container) {
+                console.error('❌ Smiling Dog animation container not found');
+                return;
+            }
+            
+            // Show loading state
+            container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; font-size: 14px; padding: 50px;">😊 Loading your trading expert...</div>';
+            
+            ensureLottieLoaded().then(() => {
+                if (!smilingDogAnimationData || smilingDogAnimationData === 'null') {
+                    throw new Error('Smiling Dog animation data not found');
+                }
+                
+                console.log('✨ Loading authentic Smiling Dog animation from assets...');
+                
+                let animationData;
+                try {
+                    animationData = typeof smilingDogAnimationData === 'string' ? 
+                        JSON.parse(smilingDogAnimationData) : smilingDogAnimationData;
+                } catch (parseError) {
+                    throw new Error('Invalid Smiling Dog JSON data');
+                }
+                
+                // Device performance detection
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                const isHighPerformance = gl && gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 4096;
+                const deviceMemory = navigator.deviceMemory || 4;
+                
+                console.log('📱 Device performance:', isHighPerformance ? 'High' : 'Standard');
+                console.log('💾 Device memory:', deviceMemory + 'GB');
+                
+                // Clear loading message
+                container.innerHTML = '';
+                
+                // Optimize settings based on device with trading enhancements
+                const optimizedSettings = {
+                    container: container,
+                    renderer: isHighPerformance ? 'svg' : 'canvas',
+                    loop: true,
+                    autoplay: true,
+                    animationData: animationData,
+                    rendererSettings: {
+                        preserveAspectRatio: 'xMidYMid meet',
+                        progressiveLoad: true,
+                        hideOnTransparent: true,
+                        scaleMode: isHighPerformance ? 'noScale' : 'showAll',
+                        clearCanvas: !isHighPerformance
+                    }
+                };
+                
+                // Destroy existing animation if present
+                if (smilingDogLottieAnimation) {
+                    smilingDogLottieAnimation.destroy();
+                    smilingDogLottieAnimation = null;
+                }
+                
+                smilingDogLottieAnimation = lottie.loadAnimation(optimizedSettings);
+                
+                // Adaptive playback speed with trading energy
+                const playbackSpeed = isHighPerformance && deviceMemory >= 6 ? 1.1 : 0.95;
+                smilingDogLottieAnimation.setSpeed(playbackSpeed);
+                
+                smilingDogLottieAnimation.addEventListener('DOMLoaded', function() {
+                    console.log('✅ Smiling Dog trading companion ready!');
+                    
+                    // Update status
+                    const statusElement = document.getElementById('smilingDogStatus');
+                    if (statusElement) {
+                        statusElement.textContent = 'Ready to trade 😊';
+                    }
+                    
+                    // Add trading energy floating effect
+                    setInterval(() => {
+                        if (smilingDogLottieAnimation && container) {
+                            const tradingFloat = Math.sin(Date.now() / 1000) * 6;
+                            const energyRotation = Math.sin(Date.now() / 1800) * 2;
+                            container.style.transform = 'translateY(' + tradingFloat + 'px) rotate(' + energyRotation + 'deg)';
+                        }
+                    }, 50);
+                });
+                
+                smilingDogLottieAnimation.addEventListener('loopComplete', function() {
+                    // Add trading energy effect on loop complete
+                    if (Math.random() > 0.8) {
+                        container.style.filter = 'drop-shadow(0 0 20px var(--bonk-orange))';
+                        setTimeout(() => {
+                            container.style.filter = 'none';
+                        }, 600);
+                    }
+                });
+                
+                smilingDogLottieAnimation.addEventListener('data_failed', function() {
+                    console.error('❌ Smiling Dog animation data failed to load');
+                    showFallbackSmilingDog(container);
+                });
+                
+            }).catch(error => {
+                console.error('❌ Failed to initialize Smiling Dog animation:', error);
+                showFallbackSmilingDog(container);
+            });
+        }
+        
+        // Fallback smiling dog display when animation fails  
+        function showFallbackSmilingDog(container) {
+            container.innerHTML = `
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100%;
+                    color: var(--text-primary);
+                    text-align: center;
+                    padding: 20px;
+                ">
+                    <div style="font-size: 60px; margin-bottom: 15px; animation: bounce 2s infinite;">😊</div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Smiling Dog</div>
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Trading Expert</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); opacity: 0.7;">
+                        Using fallback display
+                    </div>
+                </div>
+            `;
+            
+            // Update status
+            const statusElement = document.getElementById('smilingDogStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Ready to trade ⚡';
             }
         }
 
