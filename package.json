@@ -36,6 +36,8 @@
     "expo-gl-cpp": "^11.4.0",
     "expo-three": "^8.0.0",
     "gsap": "^3.12.2",
+    "lottie-react-native": "^7.2.4",
+    "lottie-web": "^5.13.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-native": "0.74.1",

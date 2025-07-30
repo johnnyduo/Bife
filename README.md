@@ -1,16 +1,24 @@
 # 🚀 Bife - Bonk-Powered DeFi Space Mission
 
-**Version:** 4.0.0  
-**Build:** WebView Architecture (Android) → Perfect DeFi Interface  
-**AI Engine:** Astronaut Dog Space Companion  
-**Avatar System:** AstronautDog.lottie + Glassmorphism UI  
+**Version:** 5.0.0 - Unified Companion Interface  
+**Build:** WebView Architecture (Android) → Seamless DeFi Experience  
+**AI Engine:** Gemini-Powered Astronaut Dog Companion  
+**Avatar System:** AstronautDog.lottie + Enhanced Glassmorphism  
 **Typography:** Gloria Hallelujah Display Font  
 **Blockchain:** Solana DeFi Integration  
-**Interface:** Touch-First DeFi Controls  
+**Interface:** Unified Touch-First DeFi Controls  
 
 ## 🎯 Overview
 
-Bife is a revolutionary **space-themed DeFi companion** featuring an authentic Astronaut Dog avatar and cutting-edge glassmorphism design. Experience the future of decentralized finance through an intuitive touch interface with stunning visual feedback and perfect pixel DeFi controls.
+Bife is a revolutionary **space-themed DeFi companion** featuring an authentic Astronaut Dog avatar with **unified interface design** and **real Gemini AI integration**. Experience the future of decentralized finance through a seamless, single-block companion interface with stunning visual effects and intelligent voice assistance.
+
+## ✨ Latest Update - Unified Companion Interface
+
+### 🎯 What's New in v5.0.0
+- **🔀 Merged Interface**: Combined two separate blocks into one seamless companion experience
+- **🤖 Real Gemini AI**: Environment-based API key integration with intelligent fallback
+- **🎨 Enhanced Space Design**: Rotating background effects and improved glassmorphism
+- **⚡ Smart Status System**: Real-time API connection indicators and status updates
 
 ### ✨ Current Features (Working)
 

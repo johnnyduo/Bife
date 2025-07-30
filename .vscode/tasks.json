@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Voice-to-DeFi App with Reorganized Navigation",
+			"type": "shell",
+			"command": "cd android && ./gradlew build",
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": [
+				"$gradle"
+			]
+		}
+	]
+}
