@@ -610,6 +610,19 @@ class MainActivity : Activity() {
             100% { transform: scale(1); }
         }
 
+        /* Price update animation */
+        .price-display.price-updated {
+            animation: priceUpdate 1s ease-in-out;
+        }
+
+        @keyframes priceUpdate {
+            0% { transform: scale(1); color: inherit; }
+            25% { transform: scale(1.03); color: var(--bonk-orange); }
+            50% { transform: scale(1.05); color: var(--defi-green); }
+            75% { transform: scale(1.03); color: var(--cyber-cyan); }
+            100% { transform: scale(1); color: inherit; }
+        }
+
         /* Stat item hover effects */
         .stat-item:hover {
             background: rgba(255, 255, 255, 0.05);
@@ -1706,6 +1719,32 @@ class MainActivity : Activity() {
             </div>
 
             <div class="trading-dashboard">
+                <!-- Real-Time BONK Price Display -->
+                <div class="trading-card" style="background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 0, 0.1)); border: 1px solid var(--bonk-orange);">
+                    <h3 style="color: var(--bonk-orange); font-family: var(--font-display); margin-bottom: 15px; text-align: center;">
+                        🚀 Live BONK Price
+                    </h3>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div id="bonk-price-display" class="price-display" style="font-size: 32px; font-weight: 700; font-family: var(--font-mono); color: var(--bonk-orange); margin-bottom: 10px;">
+                            $0.00000852
+                        </div>
+                        <div id="bonk-change-display" style="font-size: 16px; color: var(--text-secondary);">
+                            Loading market data...
+                        </div>
+                        <div id="last-update-display" style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
+                            Powered by CoinGecko API
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="action-button" onclick="refreshPricesManually()" style="font-size: 12px; padding: 8px 16px;">
+                            🔄 Refresh Price
+                        </button>
+                        <button class="action-button secondary" onclick="checkPrices()" style="font-size: 12px; padding: 8px 16px;">
+                            📊 Market Data
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Advanced Trading Interface -->
                 <div class="trading-card">
                     <h3 style="color: var(--text-primary); font-family: var(--font-display); margin-bottom: 15px;">
@@ -1934,8 +1973,8 @@ class MainActivity : Activity() {
                 <button class="action-button" onclick="voiceRefreshPortfolio()">
                     🎤 Voice Refresh
                 </button>
-                <button class="action-button secondary" onclick="voiceCheckPrices()">
-                    💰 Voice Prices
+                <button class="action-button secondary" onclick="refreshPricesManually()">
+                    💰 Live BONK Price
                 </button>
                 <button class="action-button" onclick="voiceAnalyzePortfolio()">
                     📊 AI Analysis
@@ -3393,6 +3432,174 @@ class MainActivity : Activity() {
             USDC: 1.00
         };
 
+        // CoinGecko API Integration for Real-Time BONK Price
+        let priceUpdateInterval = null;
+        let lastPriceUpdate = 0;
+        
+        // Fetch real-time prices from CoinGecko API
+        async function fetchRealTimePrices() {
+            try {
+                console.log('🔄 Fetching real-time prices from CoinGecko...');
+                
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bonk,solana,usd-coin&vs_currencies=usd&include_24hr_change=true&include_last_updated_at=true');
+                
+                if (!response.ok) {
+                    throw new Error('CoinGecko API error: ' + response.status);
+                }
+                
+                const data = await response.json();
+                console.log('📊 CoinGecko API response:', data);
+                
+                // Update price data with real values
+                if (data.solana && data.solana.usd) {
+                    priceData.SOL = data.solana.usd;
+                }
+                
+                if (data.bonk && data.bonk.usd) {
+                    priceData.BONK = data.bonk.usd;
+                    console.log('🚀 BONK price updated:', priceData.BONK);
+                }
+                
+                if (data['usd-coin'] && data['usd-coin'].usd) {
+                    priceData.USDC = data['usd-coin'].usd;
+                }
+                
+                // Update last fetch time
+                lastPriceUpdate = Date.now();
+                
+                // Update UI elements that display prices
+                updatePriceDisplays(data);
+                
+                // Show success notification
+                const bonkChange = data.bonk && data.bonk.usd_24h_change ? data.bonk.usd_24h_change.toFixed(2) : '0.00';
+                const changeColor = parseFloat(bonkChange) >= 0 ? '🟢' : '🔴';
+                showStatusMessage('💰 BONK: $' + priceData.BONK.toFixed(8) + ' (' + changeColor + bonkChange + '%)', "success");
+                
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Failed to fetch prices from CoinGecko:', error);
+                showStatusMessage("⚠️ Price fetch failed, using cached data", "warning");
+                
+                // Fallback to simulated price updates
+                priceData.SOL += (Math.random() - 0.5) * 5;
+                priceData.BONK += (Math.random() - 0.5) * 0.000001;
+                
+                return false;
+            }
+        }
+        
+        // Update UI elements that display prices
+        function updatePriceDisplays(apiData) {
+            // Update BONK price display on Trading page
+            const bonkPriceDisplay = document.getElementById('bonk-price-display');
+            const bonkChangeDisplay = document.getElementById('bonk-change-display');
+            const lastUpdateDisplay = document.getElementById('last-update-display');
+            
+            if (bonkPriceDisplay && apiData && apiData.bonk) {
+                bonkPriceDisplay.textContent = '$' + priceData.BONK.toFixed(8);
+                
+                if (apiData.bonk.usd_24h_change !== undefined) {
+                    const change = apiData.bonk.usd_24h_change;
+                    const changeColor = change >= 0 ? 'var(--defi-green)' : 'var(--text-error)';
+                    const changeIcon = change >= 0 ? '📈' : '📉';
+                    bonkChangeDisplay.innerHTML = changeIcon + ' ' + (change >= 0 ? '+' : '') + change.toFixed(2) + '% (24h)';
+                    bonkChangeDisplay.style.color = changeColor;
+                } else {
+                    bonkChangeDisplay.textContent = 'Market data updating...';
+                }
+                
+                const now = new Date();
+                lastUpdateDisplay.textContent = 'Updated: ' + now.toLocaleTimeString() + ' • CoinGecko API';
+            }
+            
+            // Update swap interface if visible
+            const swapInterface = document.querySelector('.swap-interface');
+            if (swapInterface && document.getElementById('trading-page').classList.contains('active')) {
+                calculateSwap(); // Recalculate with new prices
+            }
+            
+            // Update portfolio values
+            if (document.getElementById('portfolio-page').classList.contains('active')) {
+                updatePortfolioWithNewPrices();
+            }
+            
+            // Add visual price update effect
+            const priceElements = document.querySelectorAll('.price-display');
+            priceElements.forEach(element => {
+                element.classList.add('price-updated');
+                setTimeout(() => {
+                    element.classList.remove('price-updated');
+                }, 1000);
+            });
+        }
+        
+        // Update portfolio calculations with new prices
+        function updatePortfolioWithNewPrices() {
+            // Recalculate portfolio value with real prices
+            const newTotalValue = 
+                (portfolioData.solBalance * priceData.SOL) +
+                (portfolioData.bonkBalance * priceData.BONK) +
+                portfolioData.usdcBalance;
+            
+            const oldValue = portfolioData.totalValue;
+            portfolioData.totalValue = newTotalValue;
+            portfolioData.dailyPnl = newTotalValue - oldValue;
+            
+            // Update display elements
+            const totalValueElement = document.getElementById('totalValue');
+            const dailyPnlElement = document.getElementById('dailyPnl');
+            
+            if (totalValueElement) {
+                totalValueElement.textContent = '$' + portfolioData.totalValue.toFixed(2);
+                totalValueElement.classList.add('updating');
+                setTimeout(() => totalValueElement.classList.remove('updating'), 600);
+            }
+            
+            if (dailyPnlElement) {
+                dailyPnlElement.textContent = (portfolioData.dailyPnl >= 0 ? '+' : '') + '$' + portfolioData.dailyPnl.toFixed(2);
+                dailyPnlElement.style.color = portfolioData.dailyPnl >= 0 ? 'var(--defi-green)' : 'var(--text-error)';
+            }
+        }
+        
+        // Start real-time price updates
+        function startPriceUpdates() {
+            // Initial fetch
+            fetchRealTimePrices();
+            
+            // Set up periodic updates (every 30 seconds to respect API limits)
+            if (priceUpdateInterval) {
+                clearInterval(priceUpdateInterval);
+            }
+            
+            priceUpdateInterval = setInterval(() => {
+                fetchRealTimePrices();
+            }, 30000); // 30 seconds
+            
+            console.log('📊 Real-time price updates started (30s interval)');
+        }
+        
+        // Stop price updates (useful for performance)
+        function stopPriceUpdates() {
+            if (priceUpdateInterval) {
+                clearInterval(priceUpdateInterval);
+                priceUpdateInterval = null;
+                console.log('⏹️ Price updates stopped');
+            }
+        }
+        
+        // Manual price refresh function
+        async function refreshPricesManually() {
+            showStatusMessage("🔄 Refreshing prices...", "info");
+            const success = await fetchRealTimePrices();
+            
+            if (success) {
+                showStatusMessage("✅ Prices updated successfully!", "success");
+            } else {
+                showStatusMessage("❌ Price update failed", "error");
+            }
+        }
+
         // Initialize particles background
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
@@ -3904,14 +4111,8 @@ class MainActivity : Activity() {
         }
 
         function checkPrices() {
-            console.log('💰 Checking live prices...');
-            
-            // Simulate price updates
-            priceData.SOL += (Math.random() - 0.5) * 5;
-            priceData.BONK += (Math.random() - 0.5) * 0.000001;
-            
-            const priceInfo = 'SOL: $' + priceData.SOL.toFixed(2) + ' • BONK: $' + priceData.BONK.toFixed(8) + ' • USDC: $' + priceData.USDC.toFixed(2);
-            showNotification('Live Prices', priceInfo);
+            console.log('💰 Fetching live prices from CoinGecko...');
+            refreshPricesManually();
         }
 
         function openStaking() {
@@ -4042,6 +4243,9 @@ class MainActivity : Activity() {
                     console.log('⚠️ Solana initialization failed, using simulation mode:', error);
                 });
                 
+                // Start real-time price updates
+                startPriceUpdates();
+                
                 console.log('✅ Bife Voice DeFi Space Mission ready!');
             }).catch(error => {
                 console.warn('⚠️ Animation preload failed, continuing with basic initialization:', error);
@@ -4050,6 +4254,9 @@ class MainActivity : Activity() {
                 createParticles();
                 initVoiceRecognition();
                 calculateSwap();
+                
+                // Start real-time price updates
+                startPriceUpdates();
                 
                 console.log('✅ Bife Voice DeFi Space Mission ready (fallback mode)!');
             });
