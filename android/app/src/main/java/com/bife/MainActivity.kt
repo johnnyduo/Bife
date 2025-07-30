@@ -2049,6 +2049,12 @@ class MainActivity : Activity() {
         // Gemini API Key Management
         let geminiApiKey = null;
         
+        // Solana Mobile Wallet Adapter Integration
+        let solanaWallet = null;
+        let isWalletConnected = false;
+        let walletPublicKey = null;
+        let connection = null;
+        
         // Enhanced Lottie loading with fallback and preloading
         function ensureLottieLoaded() {
             return new Promise((resolve, reject) => {
@@ -2574,6 +2580,207 @@ class MainActivity : Activity() {
             processVoiceCommand(command);
         }
 
+        // Solana Mobile Wallet Adapter Functions
+        async function initializeSolanaConnection() {
+            try {
+                // Import the Solana Mobile Wallet Adapter
+                const { 
+                    transact, 
+                    Connection, 
+                    clusterApiUrl,
+                    PublicKey,
+                    LAMPORTS_PER_SOL
+                } = window.solanaWeb3 || {};
+                
+                if (!window.solanaWeb3) {
+                    console.log('⚠️ Solana Web3.js not loaded, loading dynamically...');
+                    await loadSolanaWeb3();
+                }
+                
+                // Initialize connection to Solana devnet
+                connection = new (window.solanaWeb3.Connection)(
+                    window.solanaWeb3.clusterApiUrl('devnet'),
+                    'confirmed'
+                );
+                
+                console.log('🔗 Solana connection initialized for devnet');
+                return true;
+            } catch (error) {
+                console.error('❌ Failed to initialize Solana connection:', error);
+                return false;
+            }
+        }
+
+        async function loadSolanaWeb3() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js';
+                script.onload = () => {
+                    console.log('✅ Solana Web3.js loaded successfully');
+                    resolve();
+                };
+                script.onerror = () => {
+                    console.error('❌ Failed to load Solana Web3.js');
+                    reject(new Error('Solana Web3.js could not be loaded'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        async function connectSolanaWallet() {
+            try {
+                showStatusMessage("Initializing Solana connection...", "info");
+                
+                // Initialize Solana connection first
+                const connectionSuccess = await initializeSolanaConnection();
+                if (!connectionSuccess) {
+                    throw new Error('Failed to initialize Solana connection');
+                }
+                
+                showStatusMessage("Connecting to Mobile Wallet Adapter...", "info");
+                
+                // Check if Mobile Wallet Adapter is available
+                if (typeof window.mobileWalletAdapter === 'undefined') {
+                    await loadMobileWalletAdapter();
+                }
+                
+                // Attempt wallet connection using Mobile Wallet Adapter protocol
+                const { transact } = window.mobileWalletAdapter || {};
+                
+                if (transact) {
+                    const result = await transact(async (wallet) => {
+                        await wallet.authorize({
+                            cluster: 'devnet',
+                            identity: { name: 'Bife - Bonk DeFi Space Mission' }
+                        });
+                        
+                        const accounts = await wallet.getAccounts();
+                        return accounts[0];
+                    });
+                    
+                    if (result && result.publicKey) {
+                        walletPublicKey = result.publicKey;
+                        isWalletConnected = true;
+                        solanaWallet = result;
+                        
+                        updateWalletUI();
+                        showStatusMessage("🎉 Wallet connected! " + walletPublicKey.toString().slice(0, 8) + "...", "success");
+                        
+                        // Get wallet balance
+                        await updateWalletBalance();
+                        
+                        return true;
+                    }
+                } else {
+                    // Fallback for testing without Mobile Wallet Adapter
+                    console.log('🔄 Mobile Wallet Adapter not available, using simulation mode');
+                    simulateWalletConnection();
+                    return true;
+                }
+                
+            } catch (error) {
+                console.error('❌ Wallet connection failed:', error);
+                showStatusMessage("Wallet connection failed. Using simulation mode.", "warning");
+                simulateWalletConnection();
+                return false;
+            }
+        }
+
+        async function loadMobileWalletAdapter() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/@solana-mobile/mobile-wallet-adapter-protocol-web3js@latest/lib/index.js';
+                script.onload = () => {
+                    console.log('✅ Mobile Wallet Adapter loaded successfully');
+                    resolve();
+                };
+                script.onerror = () => {
+                    console.error('❌ Failed to load Mobile Wallet Adapter');
+                    reject(new Error('Mobile Wallet Adapter could not be loaded'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        function simulateWalletConnection() {
+            // Simulate wallet connection for testing
+            const fakePublicKey = 'DemoWallet1234567890abcdefghijk';
+            walletPublicKey = { toString: () => fakePublicKey };
+            isWalletConnected = true;
+            
+            updateWalletUI();
+            showStatusMessage("🎉 Demo wallet connected! (Simulation Mode)", "success");
+        }
+
+        async function updateWalletBalance() {
+            if (!connection || !walletPublicKey) return;
+            
+            try {
+                const balance = await connection.getBalance(walletPublicKey);
+                const solBalance = balance / window.solanaWeb3.LAMPORTS_PER_SOL;
+                
+                const balanceElement = document.querySelector('.connected-wallet-info');
+                if (balanceElement) {
+                    balanceElement.innerHTML = 
+                        '<div style="color: var(--text-primary); font-weight: 600;">Connected Wallet</div>' +
+                        '<div style="color: var(--text-secondary); font-size: 12px;">' +
+                            walletPublicKey.toString().slice(0, 8) + '...' + walletPublicKey.toString().slice(-4) + ' • Devnet' +
+                        '</div>' +
+                        '<div style="color: var(--defi-green); font-size: 12px; margin-top: 4px;">' +
+                            'Balance: ' + solBalance.toFixed(4) + ' SOL' +
+                        '</div>';
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to get wallet balance:', error);
+            }
+        }
+
+        function updateWalletUI() {
+            const connectButton = document.querySelector('button[onclick="connectWallet()"]');
+            const walletInfo = document.querySelector('.connected-wallet-info');
+            
+            if (isWalletConnected && walletPublicKey) {
+                if (connectButton) {
+                    connectButton.textContent = 'Connected ✅';
+                    connectButton.style.background = 'var(--defi-green)';
+                    connectButton.onclick = () => disconnectWallet();
+                }
+                
+                if (walletInfo) {
+                    walletInfo.innerHTML = 
+                        '<div style="color: var(--text-primary); font-weight: 600;">Connected Wallet</div>' +
+                        '<div style="color: var(--text-secondary); font-size: 12px;">' +
+                            walletPublicKey.toString().slice(0, 8) + '...' + walletPublicKey.toString().slice(-4) + ' • Devnet' +
+                        '</div>';
+                }
+            }
+        }
+
+        function disconnectWallet() {
+            solanaWallet = null;
+            isWalletConnected = false;
+            walletPublicKey = null;
+            
+            const connectButton = document.querySelector('button[onclick="disconnectWallet()"]');
+            const walletInfo = document.querySelector('.connected-wallet-info');
+            
+            if (connectButton) {
+                connectButton.textContent = 'Connect';
+                connectButton.style.background = '';
+                connectButton.onclick = () => connectWallet();
+            }
+            
+            if (walletInfo) {
+                walletInfo.innerHTML = `
+                    <div style="color: var(--text-primary); font-weight: 600;">Connected Wallet</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">Not Connected</div>
+                `;
+            }
+            
+            showStatusMessage("Wallet disconnected", "info");
+        }
+
         // NFT Voice Functions
         function voiceDescribeNFT() {
             const statusElement = document.getElementById('shibaArtistStatus');
@@ -2714,10 +2921,7 @@ class MainActivity : Activity() {
 
         // Settings Page Functions
         function connectWallet() {
-            showStatusMessage("Connecting to Phantom wallet...", "info");
-            setTimeout(() => {
-                showStatusMessage("Wallet connected successfully! 🎉", "success");
-            }, 2000);
+            connectSolanaWallet();
         }
 
         // Astronaut Companion Control Functions
@@ -3422,6 +3626,13 @@ class MainActivity : Activity() {
                 
                 // Initialize swap calculator
                 calculateSwap();
+                
+                // Initialize Solana wallet connection
+                initializeSolanaConnection().then((success) => {
+                    console.log(success ? '🔗 Solana connection ready for devnet' : '⚠️ Solana connection failed, using simulation mode');
+                }).catch((error) => {
+                    console.log('⚠️ Solana initialization failed, using simulation mode:', error);
+                });
                 
                 console.log('✅ Bife Voice DeFi Space Mission ready!');
             }).catch(error => {
