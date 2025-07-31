@@ -2019,24 +2019,36 @@ class MainActivity : Activity() {
             <div class="portfolio-card">
                 <div class="portfolio-header">
                     <div class="portfolio-title">🌌 Portfolio Universe</div>
-                    <div class="portfolio-value" id="totalValue">$12,450.89</div>
+                    <div class="portfolio-value" id="totalValue">--</div>
                 </div>
-                <div class="portfolio-stats">
+                
+                <!-- Connect Wallet State -->
+                <div id="portfolioConnectState" class="connect-wallet-state">
+                    <div class="connect-wallet-icon">🔗</div>
+                    <div class="connect-wallet-title">Connect Your Wallet</div>
+                    <div class="connect-wallet-subtitle">View your real DeFi portfolio data</div>
+                    <button class="connect-wallet-button" onclick="connectSolanaWallet()">
+                        🚀 Connect Wallet
+                    </button>
+                </div>
+                
+                <!-- Portfolio Data State (hidden by default) -->
+                <div id="portfolioDataState" class="portfolio-stats" style="display: none;">
                     <div class="stat-item">
                         <span class="stat-label">SOL Balance</span>
-                        <span class="stat-value" id="solBalance">45.2 SOL</span>
+                        <span class="stat-value" id="solBalance">0.0000 SOL</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">BONK Holdings</span>
-                        <span class="stat-value" id="bonkBalance">2.1M BONK</span>
+                        <span class="stat-value" id="bonkBalance">0 BONK</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">USDC Stable</span>
-                        <span class="stat-value" id="usdcBalance">$3,460.12</span>
+                        <span class="stat-value" id="usdcBalance">$0.00</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">24h P&L</span>
-                        <span class="stat-value" style="color: var(--defi-green);" id="dailyPnl">+$234.56</span>
+                        <span class="stat-value" style="color: var(--text-secondary);" id="dailyPnl">$0.00</span>
                     </div>
                 </div>
             </div>
@@ -2046,8 +2058,8 @@ class MainActivity : Activity() {
                 <button class="action-button" onclick="voiceRefreshPortfolio()">
                     🎤 Voice Refresh
                 </button>
-                <button class="action-button secondary" onclick="refreshPricesManually()">
-                    💰 Live BONK Price
+                <button class="action-button secondary" onclick="refreshRealPortfolioData()">
+                    � Refresh Portfolio
                 </button>
                 <button class="action-button" onclick="voiceAnalyzePortfolio()">
                     📊 AI Analysis
@@ -2401,6 +2413,14 @@ class MainActivity : Activity() {
                 } else if (pageId === 'portfolio') {
                     console.log('🦄 Initializing portfolio page...');
                     initUnicornAnimation();
+                    
+                    // Check wallet connection state and show appropriate UI
+                    if (isWalletConnected && walletPublicKey) {
+                        showPortfolioDataState();
+                        refreshRealPortfolioData();
+                    } else {
+                        showConnectWalletState();
+                    }
                 } else if (pageId === 'settings') {
                     console.log('⚙️ Settings page loaded');
                     // Settings page initialization if needed
@@ -2860,8 +2880,17 @@ class MainActivity : Activity() {
                 updateWalletUI();
                 showStatusMessage("🎉 Devnet wallet connected! " + walletPublicKeyStr.slice(0, 8) + "...", "success");
                 
-                // Fetch real balances
+                // Show portfolio data state and fetch real balances
+                showPortfolioDataState();
                 await updateRealWalletBalance();
+                
+                // If we're on the portfolio page, refresh the data
+                if (document.getElementById('portfolio-page').classList.contains('active')) {
+                    setTimeout(() => {
+                        refreshRealPortfolioData();
+                    }, 1000);
+                }
+                
                 return true;
                 
             } catch (error) {
@@ -3428,11 +3457,12 @@ class MainActivity : Activity() {
             }
             
             if (walletInfo) {
-                walletInfo.innerHTML = `
-                    <div style="color: var(--text-primary); font-weight: 600;">Connected Wallet</div>
-                    <div style="color: var(--text-secondary); font-size: 12px;">Not Connected</div>
-                `;
+                walletInfo.innerHTML = 
+                    '<div style="color: var(--text-secondary); font-size: 12px;">Not Connected</div>';
             }
+            
+            // Reset portfolio to connect wallet state
+            showConnectWalletState();
             
             showStatusMessage("Wallet disconnected", "info");
         }
@@ -3557,21 +3587,27 @@ class MainActivity : Activity() {
         // Portfolio Voice Functions
         function voiceRefreshPortfolio() {
             executeVoiceCommand('Refresh my portfolio and show current balances');
+            refreshRealPortfolioData();
             animateShiba('portfolio');
         }
 
         function voiceCheckPrices() {
             executeVoiceCommand('Check current market prices for all tokens');
+            fetchLatestPrices().then(pricesData => {
+                showStatusMessage("💰 SOL: $" + pricesData.sol.price + " | BONK: $" + pricesData.bonk.price + " | USDC: $" + pricesData.usdc.price, "info");
+            });
             animateShiba('portfolio');
         }
 
         function voiceAnalyzePortfolio() {
             executeVoiceCommand('Analyze my portfolio performance and give recommendations');
+            generateAIPortfolioAnalysis();
             animateShiba('portfolio');
         }
 
         function voiceRebalance() {
             executeVoiceCommand('Help me rebalance my portfolio for optimal returns');
+            generateAIPortfolioAnalysis();
             animateShiba('portfolio');
         }
 
@@ -3662,28 +3698,18 @@ class MainActivity : Activity() {
         }
 
         function unicornAnalyze() {
-            const portfolioInsights = [
-                "🦄 Your portfolio has magical diversification potential!",
-                "💖 BONK holdings show strong community love energy",
-                "🌈 Consider adding more colorful tokens to your rainbow portfolio",
-                "✨ Magic happens when you HODL during market storms",
-                "🎪 Your DeFi circus is performing wonderfully!",
-                "🦄 Unicorn-level gains detected in your future!",
-                "💎 Your diamond hands are sparkling beautifully"
-            ];
-            const randomInsight = portfolioInsights[Math.floor(Math.random() * portfolioInsights.length)];
-            showStatusMessage(randomInsight, "info");
+            // Show loading state
+            showStatusMessage("🦄 Unicorn is analyzing your portfolio with AI magic...", "info");
             
             // Add magical analysis glow effect
             const container = document.getElementById('unicorn-container');
             if (container) {
                 container.classList.add('analyzing');
                 container.style.filter = 'drop-shadow(0 0 20px #ff1493)';
-                setTimeout(() => {
-                    container.classList.remove('analyzing');
-                    container.style.filter = 'none';
-                }, 3000);
             }
+            
+            // Generate real AI analysis
+            generateAIPortfolioAnalysis();
         }
 
         function unicornRefresh() {
@@ -3698,10 +3724,8 @@ class MainActivity : Activity() {
                 }, 2000);
             }
             
-            // Simulate portfolio refresh
-            setTimeout(() => {
-                showStatusMessage("✨ Portfolio refreshed with magical insights!", "success");
-            }, 1500);
+            // Refresh real portfolio data
+            refreshRealPortfolioData();
         }
 
         // Smiling Dog Trading Control Functions
@@ -3842,14 +3866,261 @@ class MainActivity : Activity() {
             }, 3000);
         }
 
-        // Mock DeFi data
+        // Enhanced Portfolio data management with real API integration
         let portfolioData = {
-            totalValue: 12450.89,
-            solBalance: 45.2,
-            bonkBalance: 2100000,
-            usdcBalance: 3460.12,
-            dailyPnl: 234.56
+            totalValue: 0,
+            lastUpdated: null,
+            previousTotalValue: 0, // Track previous value for P&L calculation
+            tokens: {
+                sol: { balance: 0, price: 0, value: 0, change24h: 0 },
+                bonk: { balance: 0, price: 0, value: 0, change24h: 0 },
+                usdc: { balance: 0, price: 0, value: 0, change24h: 0 }
+            }
         };
+
+        // Track wallet connection state
+        let isPortfolioLoaded = false;
+
+        // Real portfolio data fetching
+        async function refreshRealPortfolioData() {
+            try {
+                showStatusMessage("🔄 Fetching real portfolio data...", "info");
+                
+                if (!isWalletConnected || !walletPublicKey) {
+                    showStatusMessage("⚠️ Wallet not connected", "error");
+                    // Reset to connect wallet state
+                    showConnectWalletState();
+                    return;
+                }
+
+                // Store previous total value for P&L calculation
+                portfolioData.previousTotalValue = portfolioData.totalValue;
+
+                // Fetch token balances and prices in parallel
+                const [tokenBalances, latestPrices] = await Promise.all([
+                    fetchTokenBalances(),
+                    fetchLatestPrices()
+                ]);
+
+                // Get SOL balance
+                const solBalance = await connection.getBalance(walletPublicKey) / window.solanaWeb3.LAMPORTS_PER_SOL;
+
+                // Update portfolio data
+                portfolioData.tokens.sol = {
+                    balance: solBalance,
+                    price: latestPrices.sol.price,
+                    value: solBalance * latestPrices.sol.price,
+                    change24h: latestPrices.sol.change24h
+                };
+
+                portfolioData.tokens.bonk = {
+                    balance: tokenBalances.bonk || 0,
+                    price: latestPrices.bonk.price,
+                    value: (tokenBalances.bonk || 0) * latestPrices.bonk.price,
+                    change24h: latestPrices.bonk.change24h
+                };
+
+                portfolioData.tokens.usdc = {
+                    balance: tokenBalances.usdc || 0,
+                    price: latestPrices.usdc.price,
+                    value: (tokenBalances.usdc || 0) * latestPrices.usdc.price,
+                    change24h: latestPrices.usdc.change24h
+                };
+
+                portfolioData.totalValue = portfolioData.tokens.sol.value + portfolioData.tokens.bonk.value + portfolioData.tokens.usdc.value;
+                portfolioData.lastUpdated = new Date().toISOString();
+
+                // Mark as loaded and update UI
+                isPortfolioLoaded = true;
+                showPortfolioDataState();
+                updatePortfolioUI();
+                showStatusMessage("✅ Portfolio data refreshed successfully!", "success");
+
+            } catch (error) {
+                console.error('❌ Error refreshing portfolio data:', error);
+                showStatusMessage("❌ Failed to refresh portfolio: " + error.message, "error");
+            }
+        }
+
+        async function fetchLatestPrices() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana,bonk,usd-coin&vs_currencies=usd&include_24hr_change=true');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch prices');
+                }
+                
+                const data = await response.json();
+                
+                return {
+                    sol: {
+                        price: data.solana?.usd || 145.67,
+                        change24h: data.solana?.usd_24h_change || 0
+                    },
+                    bonk: {
+                        price: data.bonk?.usd || 0.00000852,
+                        change24h: data.bonk?.usd_24h_change || 0
+                    },
+                    usdc: {
+                        price: data['usd-coin']?.usd || 1.00,
+                        change24h: data['usd-coin']?.usd_24h_change || 0
+                    }
+                };
+            } catch (error) {
+                console.error('❌ Error fetching prices:', error);
+                // Return fallback prices
+                return {
+                    sol: { price: 145.67, change24h: 2.3 },
+                    bonk: { price: 0.00000852, change24h: 15.2 },
+                    usdc: { price: 1.00, change24h: 0.01 }
+                };
+            }
+        }
+
+        function updatePortfolioUI() {
+            // Update total value
+            const totalValueElement = document.getElementById('totalValue');
+            if (totalValueElement) {
+                totalValueElement.textContent = '$' + portfolioData.totalValue.toFixed(2);
+            }
+
+            // Update SOL balance
+            const solBalanceElement = document.getElementById('solBalance');
+            if (solBalanceElement) {
+                solBalanceElement.textContent = portfolioData.tokens.sol.balance.toFixed(4) + ' SOL';
+            }
+
+            // Update BONK balance
+            const bonkBalanceElement = document.getElementById('bonkBalance');
+            if (bonkBalanceElement) {
+                const bonkAmount = portfolioData.tokens.bonk.balance;
+                if (bonkAmount >= 1000000) {
+                    bonkBalanceElement.textContent = (bonkAmount / 1000000).toFixed(1) + 'M BONK';
+                } else if (bonkAmount >= 1000) {
+                    bonkBalanceElement.textContent = (bonkAmount / 1000).toFixed(1) + 'K BONK';
+                } else {
+                    bonkBalanceElement.textContent = bonkAmount.toFixed(0) + ' BONK';
+                }
+            }
+
+            // Update USDC balance
+            const usdcBalanceElement = document.getElementById('usdcBalance');
+            if (usdcBalanceElement) {
+                usdcBalanceElement.textContent = '$' + portfolioData.tokens.usdc.balance.toFixed(2);
+            }
+
+            // Calculate and update 24h P&L with proper validation
+            const dailyPnlElement = document.getElementById('dailyPnl');
+            if (dailyPnlElement) {
+                let dailyPnl = 0;
+                
+                // Method 1: Calculate based on price changes if we have valid data
+                if (portfolioData.tokens.sol.change24h !== undefined && 
+                    portfolioData.tokens.bonk.change24h !== undefined && 
+                    portfolioData.tokens.usdc.change24h !== undefined) {
+                    
+                    dailyPnl = 
+                        (portfolioData.tokens.sol.value * portfolioData.tokens.sol.change24h / 100) +
+                        (portfolioData.tokens.bonk.value * portfolioData.tokens.bonk.change24h / 100) +
+                        (portfolioData.tokens.usdc.value * portfolioData.tokens.usdc.change24h / 100);
+                }
+                
+                // Method 2: If we have previous total value, use the difference
+                if (portfolioData.previousTotalValue > 0 && isFinite(portfolioData.previousTotalValue)) {
+                    const pnlFromValue = portfolioData.totalValue - portfolioData.previousTotalValue;
+                    if (Math.abs(pnlFromValue) > Math.abs(dailyPnl)) {
+                        dailyPnl = pnlFromValue;
+                    }
+                }
+                
+                // Validate the P&L value
+                if (!isFinite(dailyPnl) || isNaN(dailyPnl)) {
+                    dailyPnl = 0;
+                }
+                
+                const isPositive = dailyPnl >= 0;
+                dailyPnlElement.textContent = (isPositive ? '+' : '') + '$' + dailyPnl.toFixed(2);
+                
+                // Set color based on value
+                if (dailyPnl > 0) {
+                    dailyPnlElement.style.color = 'var(--defi-green)';
+                } else if (dailyPnl < 0) {
+                    dailyPnlElement.style.color = '#ff4757';
+                } else {
+                    dailyPnlElement.style.color = 'var(--text-secondary)';
+                }
+            }
+        }
+
+        // Show connect wallet state
+        function showConnectWalletState() {
+            const connectState = document.getElementById('portfolioConnectState');
+            const dataState = document.getElementById('portfolioDataState');
+            const totalValue = document.getElementById('totalValue');
+            
+            if (connectState) {
+                connectState.style.display = 'flex';
+            }
+            if (dataState) {
+                dataState.style.display = 'none';
+            }
+            if (totalValue) {
+                totalValue.textContent = '--';
+            }
+            
+            isPortfolioLoaded = false;
+        }
+
+        // Show portfolio data state
+        function showPortfolioDataState() {
+            const connectState = document.getElementById('portfolioConnectState');
+            const dataState = document.getElementById('portfolioDataState');
+            
+            if (connectState) {
+                connectState.style.display = 'none';
+            }
+            if (dataState) {
+                dataState.style.display = 'grid';
+            }
+            
+            isPortfolioLoaded = true;
+        }
+
+        function getCurrentPortfolioData() {
+            return {
+                totalValue: portfolioData.totalValue,
+                lastUpdated: portfolioData.lastUpdated,
+                assets: [
+                    {
+                        symbol: 'SOL',
+                        name: 'Solana',
+                        balance: portfolioData.tokens.sol.balance,
+                        price: portfolioData.tokens.sol.price,
+                        value: portfolioData.tokens.sol.value,
+                        change24h: portfolioData.tokens.sol.change24h,
+                        allocation: (portfolioData.tokens.sol.value / portfolioData.totalValue) * 100
+                    },
+                    {
+                        symbol: 'BONK',
+                        name: 'Bonk',
+                        balance: portfolioData.tokens.bonk.balance,
+                        price: portfolioData.tokens.bonk.price,
+                        value: portfolioData.tokens.bonk.value,
+                        change24h: portfolioData.tokens.bonk.change24h,
+                        allocation: (portfolioData.tokens.bonk.value / portfolioData.totalValue) * 100
+                    },
+                    {
+                        symbol: 'USDC',
+                        name: 'USD Coin',
+                        balance: portfolioData.tokens.usdc.balance,
+                        price: portfolioData.tokens.usdc.price,
+                        value: portfolioData.tokens.usdc.value,
+                        change24h: portfolioData.tokens.usdc.change24h,
+                        allocation: (portfolioData.tokens.usdc.value / portfolioData.totalValue) * 100
+                    }
+                ]
+            };
+        }
 
         // Price data initialization with real-time CoinGecko API
         let priceData = {
@@ -4857,6 +5128,9 @@ class MainActivity : Activity() {
                 // Initialize swap calculator
                 calculateSwap();
                 
+                // Initialize portfolio state (start with connect wallet state)
+                showConnectWalletState();
+                
                 // Initialize Solana wallet connection
                 initializeSolanaConnection().then((success) => {
                     console.log(success ? '🔗 Solana connection ready for devnet' : '⚠️ Solana connection failed, using simulation mode');
@@ -4903,7 +5177,487 @@ class MainActivity : Activity() {
         });
 
         console.log('🚀 Voice DeFi Space Mission Control system loaded!');
+        // AI Portfolio Analysis with Gemini
+        async function generateAIPortfolioAnalysis() {
+            try {
+                showStatusMessage("🤖 Generating AI portfolio analysis...", "info");
+                
+                // Refresh portfolio data first
+                await refreshRealPortfolioData();
+                
+                // Prepare comprehensive portfolio data for AI
+                const portfolioSummary = {
+                    totalValue: portfolioData.totalValue,
+                    tokens: portfolioData.tokens,
+                    allocation: {
+                        sol: (portfolioData.tokens.sol.value / portfolioData.totalValue * 100).toFixed(1),
+                        bonk: (portfolioData.tokens.bonk.value / portfolioData.totalValue * 100).toFixed(1),
+                        usdc: (portfolioData.tokens.usdc.value / portfolioData.totalValue * 100).toFixed(1)
+                    },
+                    lastUpdated: portfolioData.lastUpdated
+                };
+                
+                // Create detailed prompt for Gemini
+                const analysisPrompt = 
+                    'You are a professional DeFi portfolio analyst with expertise in Solana ecosystem tokens. Please analyze this portfolio and provide detailed insights:\\n\\n' +
+                    'PORTFOLIO OVERVIEW:\\n' +
+                    '- Total Value: $' + portfolioData.totalValue.toFixed(2) + '\\n' +
+                    '- SOL Holdings: ' + portfolioData.tokens.sol.balance.toFixed(4) + ' SOL ($' + portfolioData.tokens.sol.value.toFixed(2) + ') - ' + portfolioSummary.allocation.sol + '%\\n' +
+                    '- BONK Holdings: ' + portfolioData.tokens.bonk.balance.toLocaleString() + ' BONK ($' + portfolioData.tokens.bonk.value.toFixed(2) + ') - ' + portfolioSummary.allocation.bonk + '%\\n' +
+                    '- USDC Holdings: ' + portfolioData.tokens.usdc.balance.toFixed(2) + ' USDC - ' + portfolioSummary.allocation.usdc + '%\\n\\n' +
+                    'ANALYSIS REQUIREMENTS:\\n' +
+                    '1. **Risk Assessment**: Analyze the current allocation and risk profile\\n' +
+                    '2. **Diversification**: Comment on portfolio diversification within Solana ecosystem\\n' +
+                    '3. **Market Outlook**: Provide insights on SOL and BONK price trends\\n' +
+                    '4. **Recommendations**: Suggest 3-5 specific actionable recommendations\\n' +
+                    '5. **DeFi Opportunities**: Mention relevant yield farming, staking, or liquidity provision opportunities\\n' +
+                    '6. **Risk Management**: Suggest risk mitigation strategies\\n\\n' +
+                    'Please provide a comprehensive analysis in a structured format with clear sections. Include specific percentage recommendations for rebalancing if needed. Keep the tone professional but accessible, and focus on actionable insights for a DeFi investor.';
+                
+                // Call Gemini API
+                const analysisResult = await callGeminiAPI(analysisPrompt);
+                
+                if (analysisResult && analysisResult.success) {
+                    displayAIAnalysisPopup(analysisResult.response, portfolioSummary);
+                } else {
+                    showStatusMessage("❌ AI analysis failed. Please try again.", "error");
+                }
+                
+            } catch (error) {
+                console.error('AI Analysis error:', error);
+                showStatusMessage("❌ AI analysis error: " + error.message, "error");
+            }
+        }
+
+        // Gemini API Integration
+        async function callGeminiAPI(prompt) {
+            try {
+                const GEMINI_API_KEY = 'AIzaSyCOUHXr4DKlv8w_K6MXhnW1lJbTaOrsNoY'; // From your .env
+                const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=' + GEMINI_API_KEY;
+                
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        topK: 40,
+                        topP: 0.95,
+                        maxOutputTokens: 2048,
+                    }
+                };
+                
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Gemini API error: ' + response.status);
+                }
+                
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    return {
+                        success: true,
+                        response: data.candidates[0].content.parts[0].text
+                    };
+                } else {
+                    throw new Error('Invalid response from Gemini API');
+                }
+                
+            } catch (error) {
+                console.error('Gemini API error:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // Display AI Analysis Popup
+        function displayAIAnalysisPopup(analysisText, portfolioSummary) {
+            // Remove existing popup if any
+            const existingOverlay = document.getElementById('ai-analysis-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+            
+            // Create popup overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'ai-analysis-overlay';
+            overlay.className = 'ai-analysis-overlay';
+            
+            // Create popup content
+            const popupHTML = 
+                '<div class="ai-analysis-popup">' +
+                    '<div class="ai-analysis-header">' +
+                        '<div class="ai-analysis-title">🤖 AI Portfolio Analysis</div>' +
+                        '<button class="ai-analysis-close" onclick="closeAIAnalysisPopup()">×</button>' +
+                    '</div>' +
+                    '<div class="ai-analysis-content">' +
+                        '<div class="portfolio-summary">' +
+                            '<h3>📊 Current Portfolio Summary</h3>' +
+                            '<div class="summary-grid">' +
+                                '<div class="summary-item">' +
+                                    '<div class="summary-label">Total Value</div>' +
+                                    '<div class="summary-value">$' + portfolioSummary.totalValue.toFixed(2) + '</div>' +
+                                '</div>' +
+                                '<div class="summary-item">' +
+                                    '<div class="summary-label">SOL Allocation</div>' +
+                                    '<div class="summary-value">' + portfolioSummary.allocation.sol + '%</div>' +
+                                '</div>' +
+                                '<div class="summary-item">' +
+                                    '<div class="summary-label">BONK Allocation</div>' +
+                                    '<div class="summary-value">' + portfolioSummary.allocation.bonk + '%</div>' +
+                                '</div>' +
+                                '<div class="summary-item">' +
+                                    '<div class="summary-label">USDC Allocation</div>' +
+                                    '<div class="summary-value">' + portfolioSummary.allocation.usdc + '%</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="ai-analysis-text">' + formatAnalysisText(analysisText) + '</div>' +
+                    '</div>' +
+                    '<div class="ai-analysis-footer">' +
+                        '<button class="ai-action-button" onclick="refreshRealPortfolioData()">🔄 Refresh Data</button>' +
+                        '<button class="ai-action-button secondary" onclick="copyAnalysisToClipboard()">📋 Copy Analysis</button>' +
+                        '<button class="ai-action-button secondary" onclick="closeAIAnalysisPopup()">✨ Got It</button>' +
+                    '</div>' +
+                '</div>';
+                
+            overlay.innerHTML = popupHTML;
+            
+            // Add to document
+            document.body.appendChild(overlay);
+            
+            // Show with animation
+            setTimeout(() => {
+                overlay.classList.add('show');
+            }, 50);
+            
+            // Store analysis for clipboard
+            window.currentAnalysis = analysisText;
+            
+            // Reset unicorn animation state
+            setTimeout(() => {
+                const container = document.getElementById('unicorn-container');
+                if (container) {
+                    container.classList.remove('analyzing');
+                    container.style.filter = 'none';
+                }
+            }, 1000);
+            
+            showStatusMessage("🎉 AI Analysis Complete!", "success");
+        }
+
+        function formatAnalysisText(text) {
+            // Convert markdown-like formatting to HTML
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/### (.*$)/gm, '<h3>$1</h3>')
+                .replace(/## (.*$)/gm, '<h2>$1</h2>')
+                .replace(/# (.*$)/gm, '<h1>$1</h1>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function closeAIAnalysisPopup() {
+            const overlay = document.getElementById('ai-analysis-overlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+                setTimeout(() => {
+                    overlay.remove();
+                }, 300);
+            }
+        }
+
+        function copyAnalysisToClipboard() {
+            if (window.currentAnalysis) {
+                navigator.clipboard.writeText(window.currentAnalysis).then(() => {
+                    showStatusMessage("📋 Analysis copied to clipboard!", "success");
+                }).catch(() => {
+                    showStatusMessage("❌ Failed to copy to clipboard", "error");
+                });
+            }
+        }
+
+        // Enhanced voice portfolio refresh
+        function voiceRefreshPortfolio() {
+            executeVoiceCommand('Refresh my complete portfolio with latest data');
+            refreshRealPortfolioData();
+            animateShiba('portfolio');
+        }
+
     </script>
+    
+    <style>
+        /* AI Analysis Popup Styles */
+        .ai-analysis-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .ai-analysis-overlay.show {
+            opacity: 1;
+        }
+        
+        .ai-analysis-popup {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 0;
+            max-width: 90%;
+            max-height: 85%;
+            width: 600px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .ai-analysis-overlay.show .ai-analysis-popup {
+            transform: scale(1);
+        }
+        
+        .ai-analysis-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ai-analysis-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ai-analysis-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-analysis-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .ai-analysis-content {
+            padding: 30px;
+            max-height: 500px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            color: white;
+        }
+        
+        .portfolio-summary {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .portfolio-summary h3 {
+            margin: 0 0 15px 0;
+            color: #ffd700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .summary-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+        
+        .summary-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ai-analysis-text {
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .ai-analysis-text h1, .ai-analysis-text h2, .ai-analysis-text h3 {
+            color: #ffd700;
+            margin: 20px 0 10px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ai-analysis-text strong {
+            color: #00ff88;
+        }
+        
+        .ai-analysis-footer {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ai-action-button {
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .ai-action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+        
+        .ai-action-button.secondary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        
+        .ai-action-button.secondary:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Connect Wallet State Styles */
+        .connect-wallet-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 15px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        
+        .connect-wallet-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+        
+        .connect-wallet-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .connect-wallet-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+        }
+        
+        .connect-wallet-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .connect-wallet-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .ai-analysis-popup {
+                max-width: 95%;
+                margin: 10px;
+            }
+            
+            .ai-analysis-header {
+                padding: 15px 20px;
+            }
+            
+            .ai-analysis-title {
+                font-size: 20px;
+            }
+            
+            .ai-analysis-content {
+                padding: 20px;
+                max-height: 400px;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .ai-analysis-footer {
+                padding: 15px 20px;
+                flex-direction: column;
+            }
+            
+            .ai-action-button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
 </body>
 </html>
         """
