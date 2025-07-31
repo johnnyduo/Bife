@@ -1,0 +1,37 @@
+{
+  "name": "bife-solana-tokens",
+  "version": "1.0.0",
+  "description": "Mock BONK and USDC tokens for BIFE DeFi app on Solana devnet",
+  "main": "index.js",
+  "scripts": {
+    "setup-wallet": "ts-node scripts/setup-wallet.ts",
+    "create-tokens": "ts-node scripts/create-tokens.ts",
+    "mint-tokens": "ts-node scripts/mint-tokens.ts",
+    "deploy-all": "yarn setup-wallet && yarn create-tokens",
+    "airdrop": "ts-node scripts/airdrop.ts",
+    "integrate": "ts-node scripts/integrate.ts",
+    "check-balance": "ts-node scripts/check-balance.ts"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.6",
+    "@solana/spl-token": "^0.3.9"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2"
+  },
+  "keywords": [
+    "solana",
+    "bonk",
+    "usdc",
+    "defi",
+    "token",
+    "spl-token",
+    "mock",
+    "devnet",
+    "bife"
+  ],
+  "author": "BIFE Team",
+  "license": "MIT"
+}

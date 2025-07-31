@@ -1753,23 +1753,68 @@ class MainActivity : Activity() {
                     
                     <!-- Swap Interface -->
                     <div class="swap-interface">
-                        <div class="swap-title">🔄 Voice-Enhanced Swap</div>
+                        <div class="swap-title">🔄 Real-Time Voice-Enhanced Swap</div>
                         
                         <div class="token-input">
-                            <input type="number" class="token-amount" placeholder="0.00" id="fromAmount" value="100">
+                            <input type="number" class="token-amount" placeholder="0.00" id="fromAmount" value="100" oninput="calculateSwapOutput()">
                             <div class="token-symbol" onclick="selectFromToken()">USDC</div>
                         </div>
                         
-                        <div class="swap-arrow">⬇️</div>
+                        <div class="swap-arrow">
+                            ⬇️
+                            <div class="exchange-rate" id="exchangeRate" style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">
+                                Loading rate...
+                            </div>
+                        </div>
                         
                         <div class="token-input">
                             <input type="number" class="token-amount" placeholder="0.00" id="toAmount" readonly>
                             <div class="token-symbol" onclick="selectToToken()">BONK</div>
+                            <div class="price-impact" id="priceImpact" style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">
+                                Est. price impact: 0.1%
+                            </div>
                         </div>
                         
-                        <button class="swap-button" onclick="executeSwap()">
+                        <div class="swap-details" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; margin: 15px 0; font-size: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>Rate (1 USDC):</span>
+                                <span id="swapRate">~0 BONK</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>Slippage:</span>
+                                <span style="color: var(--defi-green);">1.0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Est. Fee:</span>
+                                <span>$0.25 SOL</span>
+                            </div>
+                        </div>
+                        
+                        <button class="swap-button" onclick="executeSwap()" id="swapButton" disabled>
                             🎤 Voice Execute Swap
                         </button>
+                    </div>
+                    
+                    <!-- Deployed Token Info -->
+                    <div style="background: rgba(0,0,0,0.1); border-radius: 8px; padding: 12px; margin-top: 15px; font-size: 11px; border: 1px solid rgba(255,255,255,0.1);">
+                        <div style="color: var(--text-primary); font-weight: 600; margin-bottom: 8px;">✅ Live Deployed Tokens on Solana Devnet</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <div style="color: var(--bonk-orange); font-weight: 500;">🚀 Mock BONK (mBONK)</div>
+                                <div style="color: var(--text-secondary); font-size: 10px;">Supply: 93T tokens</div>
+                                <div style="color: var(--text-secondary); font-size: 9px;">8wg7...9BiP</div>
+                            </div>
+                            <div>
+                                <div style="color: var(--cyber-cyan); font-weight: 500;">💵 Mock USDC (mUSDC)</div>
+                                <div style="color: var(--text-secondary); font-size: 10px;">Supply: 10M tokens</div>
+                                <div style="color: var(--text-secondary); font-size: 9px;">9ncc...ZWTT</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 8px; text-align: center;">
+                            <button class="action-button secondary" onclick="viewTokensOnExplorer()" style="font-size: 10px; padding: 4px 8px;">
+                                🔗 View on Solana Explorer
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -3426,11 +3471,45 @@ class MainActivity : Activity() {
             dailyPnl: 234.56
         };
 
+        // Price data initialization with real-time CoinGecko API
         let priceData = {
             SOL: 145.67,
             BONK: 0.00000852,
             USDC: 1.00
         };
+        
+        // 🪙 Deployed Mock Tokens on Solana Devnet
+        // =========================================
+        // Generated: 2025-07-31T07:59:44.682Z
+        // Network: devnet
+        // Deployer: 5qX8VcUJGhHwXuVUknPa2TuQoKffWZnk5HPNUeUbpJnA
+        
+        const DEVNET_TOKENS = {
+            MOCK_BONK: {
+                name: 'Mock BONK',
+                symbol: 'mBONK',
+                mint: '8wg7hAtfF1eJZLLb7TCHZhVuS3NkBdm8R7dtRPvn9BiP',
+                decimals: 5,
+                supply: '9300000000000000000',
+                supplyFormatted: '93,000,000,000,000',
+                tokenAccount: '6RVvbXomByWMAdsEKUkCdXv9mEhPvWkp5ZX5aNcsge41',
+                explorer: 'https://explorer.solana.com/address/8wg7hAtfF1eJZLLb7TCHZhVuS3NkBdm8R7dtRPvn9BiP?cluster=devnet'
+            },
+            MOCK_USDC: {
+                name: 'Mock USD Coin',
+                symbol: 'mUSDC',
+                mint: '9nccat6babNG1u32Xu6d8XojGy7BGH6shwCLzoCrZWTT',
+                decimals: 6,
+                supply: '10000000000000',
+                supplyFormatted: '10,000,000',
+                tokenAccount: '9Da78s6up8QkiAvMKhmA73KdeKsVxuP6J69nFGrg2Bf',
+                explorer: 'https://explorer.solana.com/address/9nccat6babNG1u32Xu6d8XojGy7BGH6shwCLzoCrZWTT?cluster=devnet'
+            }
+        };
+        
+        // Update price data to include mock tokens
+        priceData.MOCK_BONK = priceData.BONK; // Use same price as real BONK
+        priceData.MOCK_USDC = priceData.USDC; // Use same price as real USDC
 
         // CoinGecko API Integration for Real-Time BONK Price
         let priceUpdateInterval = null;
@@ -3516,7 +3595,7 @@ class MainActivity : Activity() {
             // Update swap interface if visible
             const swapInterface = document.querySelector('.swap-interface');
             if (swapInterface && document.getElementById('trading-page').classList.contains('active')) {
-                calculateSwap(); // Recalculate with new prices
+                calculateSwapOutput(); // Recalculate with new prices
             }
             
             // Update portfolio values
@@ -3891,6 +3970,12 @@ class MainActivity : Activity() {
                         statusElement.textContent = 'Ready to trade 😊';
                     }
                     
+                    // Initialize swap calculations with real-time prices
+                    setTimeout(() => {
+                        calculateSwapOutput();
+                        console.log('💱 Swap interface initialized with real-time prices');
+                    }, 500);
+                    
                     // Add trading energy floating effect
                     setInterval(() => {
                         if (smilingDogLottieAnimation && container) {
@@ -4163,6 +4248,91 @@ class MainActivity : Activity() {
             document.getElementById('toAmount').value = toAmount > 0 ? toAmount.toFixed(6) : '0.00';
         }
 
+        // Enhanced swap calculation with real-time price updates and detailed UI
+        function calculateSwapOutput() {
+            const fromAmount = parseFloat(document.getElementById('fromAmount').value) || 0;
+            const fromToken = document.querySelector('.token-input .token-symbol').textContent;
+            const toToken = document.querySelectorAll('.token-input .token-symbol')[1].textContent;
+            
+            let toAmount = 0;
+            let exchangeRate = 0;
+            let rateText = '';
+            
+            // Calculate conversion with real-time CoinGecko prices
+            if (fromToken === 'USDC' && toToken === 'BONK') {
+                toAmount = fromAmount / priceData.BONK;
+                exchangeRate = 1 / priceData.BONK;
+                rateText = '1 USDC = ' + exchangeRate.toLocaleString() + ' BONK';
+            } else if (fromToken === 'USDC' && toToken === 'SOL') {
+                toAmount = fromAmount / priceData.SOL;
+                exchangeRate = 1 / priceData.SOL;
+                rateText = '1 USDC = ' + exchangeRate.toFixed(4) + ' SOL';
+            } else if (fromToken === 'SOL' && toToken === 'USDC') {
+                toAmount = fromAmount * priceData.SOL;
+                exchangeRate = priceData.SOL;
+                rateText = '1 SOL = $' + exchangeRate.toFixed(2) + ' USDC';
+            } else if (fromToken === 'SOL' && toToken === 'BONK') {
+                toAmount = (fromAmount * priceData.SOL) / priceData.BONK;
+                exchangeRate = priceData.SOL / priceData.BONK;
+                rateText = '1 SOL = ' + exchangeRate.toLocaleString() + ' BONK';
+            } else if (fromToken === 'BONK' && toToken === 'USDC') {
+                toAmount = fromAmount * priceData.BONK;
+                exchangeRate = priceData.BONK;
+                rateText = '1 BONK = $' + exchangeRate.toFixed(8) + ' USDC';
+            } else if (fromToken === 'BONK' && toToken === 'SOL') {
+                toAmount = (fromAmount * priceData.BONK) / priceData.SOL;
+                exchangeRate = priceData.BONK / priceData.SOL;
+                rateText = '1 BONK = ' + exchangeRate.toFixed(10) + ' SOL';
+            }
+            
+            // Update output amount
+            document.getElementById('toAmount').value = toAmount > 0 ? toAmount.toFixed(6) : '0.00';
+            
+            // Update exchange rate display
+            const exchangeRateElement = document.getElementById('exchangeRate');
+            if (exchangeRateElement) {
+                exchangeRateElement.textContent = rateText;
+            }
+            
+            // Update detailed swap rate
+            const swapRateElement = document.getElementById('swapRate');
+            if (swapRateElement) {
+                if (fromToken === 'USDC' && toToken === 'BONK') {
+                    swapRateElement.textContent = '~' + Math.floor(exchangeRate).toLocaleString() + ' BONK';
+                } else {
+                    swapRateElement.textContent = rateText.split(' = ')[1];
+                }
+            }
+            
+            // Calculate and display price impact
+            let priceImpact = 0.1; // Default 0.1% for small trades
+            if (fromAmount > 1000) priceImpact = 0.2;
+            if (fromAmount > 10000) priceImpact = 0.5;
+            if (fromAmount > 50000) priceImpact = 1.0;
+            
+            const priceImpactElement = document.getElementById('priceImpact');
+            if (priceImpactElement) {
+                const impactColor = priceImpact < 0.5 ? 'var(--defi-green)' : priceImpact < 1.0 ? 'var(--bonk-orange)' : 'var(--text-error)';
+                priceImpactElement.innerHTML = 'Est. price impact: <span style="color: ' + impactColor + '">' + priceImpact.toFixed(1) + '%</span>';
+            }
+            
+            // Enable/disable swap button based on valid amounts
+            const swapButton = document.getElementById('swapButton');
+            if (swapButton) {
+                if (fromAmount > 0 && toAmount > 0) {
+                    swapButton.disabled = false;
+                    swapButton.style.opacity = '1';
+                    swapButton.textContent = '🎤 Voice Execute Swap';
+                } else {
+                    swapButton.disabled = true;
+                    swapButton.style.opacity = '0.5';
+                    swapButton.textContent = 'Enter Amount to Swap';
+                }
+            }
+            
+            console.log('💱 Swap calculated:', fromAmount, fromToken, '→', toAmount.toFixed(6), toToken, '| Rate:', rateText);
+        }
+
         function executeSwap() {
             const fromAmount = document.getElementById('fromAmount').value;
             const fromToken = document.querySelector('.token-input .token-symbol').textContent;
@@ -4208,6 +4378,32 @@ class MainActivity : Activity() {
                 fromAmountInput.addEventListener('input', calculateSwap);
             }
         });
+
+        // View deployed tokens on Solana Explorer
+        function viewTokensOnExplorer() {
+            console.log('🔗 Opening Solana Explorer for deployed tokens...');
+            
+            // Show notification with token links
+            showStatusMessage('🔗 Opening Solana Explorer for deployed tokens...', 'info');
+            
+            // Log token information
+            console.log('🚀 Mock BONK Explorer:', DEVNET_TOKENS.MOCK_BONK.explorer);
+            console.log('💵 Mock USDC Explorer:', DEVNET_TOKENS.MOCK_USDC.explorer);
+            
+            // In a real app, you would open the browser with these URLs
+            // For demo purposes, we'll just show the information
+            setTimeout(() => {
+                showStatusMessage('💡 Token addresses: mBONK (' + DEVNET_TOKENS.MOCK_BONK.mint.substring(0, 8) + '...) and mUSDC (' + DEVNET_TOKENS.MOCK_USDC.mint.substring(0, 8) + '...)', 'success');
+            }, 1500);
+        }
+        
+        // Log deployed token integration
+        console.log('🪙 BIFE Mock Tokens Integration Complete!');
+        console.log('📊 Token addresses loaded and ready for trading');
+        console.log('🚀 Mock BONK mint:', DEVNET_TOKENS.MOCK_BONK.mint);
+        console.log('💵 Mock USDC mint:', DEVNET_TOKENS.MOCK_USDC.mint);
+        console.log('🔗 BONK Explorer:', DEVNET_TOKENS.MOCK_BONK.explorer);
+        console.log('🔗 USDC Explorer:', DEVNET_TOKENS.MOCK_USDC.explorer);
 
         // Initialize everything
         function init() {
