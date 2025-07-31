@@ -51,7 +51,7 @@ class MainActivity : Activity() {
             fun getSolanaWalletPublicKey(): String {
                 // Get the deployed devnet wallet public key
                 val publicKey = System.getenv("SOLANA_WALLET_PUBLIC_KEY") 
-                    ?: "5qX8VcUJGhHwXuVUknPa2TuQoKffWZnk5HPNUeUbpJnA" // Fallback to deployed wallet
+                    ?: "3kFU8bBJm7epTYcJUGhPCxFfyK52o2WmyMQX9SbDWr48" // Fallback to wallet with private key
                 
                 android.util.Log.d("MainActivity", "🔑 Solana wallet public key: ${publicKey.take(8)}...")
                 return publicKey
@@ -1828,12 +1828,12 @@ class MainActivity : Activity() {
                         <div style="color: var(--text-primary); font-weight: 600; margin-bottom: 8px;">✅ Live Deployed Tokens on Solana Devnet</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <div>
-                                <div style="color: var(--bonk-orange); font-weight: 500;">🚀 Mock BONK (mBONK)</div>
+                                <div style="color: var(--bonk-orange); font-weight: 500;">🚀 BONK</div>
                                 <div style="color: var(--text-secondary); font-size: 10px;">Supply: 93T tokens</div>
                                 <div style="color: var(--text-secondary); font-size: 9px;">8wg7...9BiP</div>
                             </div>
                             <div>
-                                <div style="color: var(--cyber-cyan); font-weight: 500;">💵 Mock USDC (mUSDC)</div>
+                                <div style="color: var(--cyber-cyan); font-weight: 500;">💵 USDC</div>
                                 <div style="color: var(--text-secondary); font-size: 10px;">Supply: 10M tokens</div>
                                 <div style="color: var(--text-secondary); font-size: 9px;">9ncc...ZWTT</div>
                             </div>
@@ -2079,7 +2079,6 @@ class MainActivity : Activity() {
                                 </div>
                                 <div style="display: flex; gap: 8px;">
                                     <button class="action-button secondary" onclick="connectWallet()">Connect</button>
-                                    <button class="action-button" onclick="testWalletConnection()" style="font-size: 11px; padding: 8px 12px;">🧪 Test</button>
                                 </div>
                             </div>
                             <div class="connected-wallet-info" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -2387,20 +2386,26 @@ class MainActivity : Activity() {
             
             console.log('🔄 Switched to page:', pageId);
             
-            // Initialize page-specific features
-            if (pageId === 'companion') {
-                initAstronautDogAnimation();
-                initVoiceRecognition();
-            } else if (pageId === 'trading') {
-                initSmilingDogAnimation();
-            } else if (pageId === 'nft') {
-                initShibaNFTAnimation();
-            } else if (pageId === 'portfolio') {
-                initUnicornAnimation();
-            } else if (pageId === 'settings') {
-                // Settings page initialization if needed
-                console.log('⚙️ Settings page loaded');
-            }
+            // Initialize page-specific features with proper timing
+            setTimeout(() => {
+                if (pageId === 'companion') {
+                    console.log('🚀 Initializing companion page...');
+                    initAstronautDogAnimation();
+                    initVoiceRecognition();
+                } else if (pageId === 'trading') {
+                    console.log('💹 Initializing trading page...');
+                    initSmilingDogAnimation();
+                } else if (pageId === 'nft') {
+                    console.log('🎨 Initializing NFT page...');
+                    initShibaNFTAnimation();
+                } else if (pageId === 'portfolio') {
+                    console.log('🦄 Initializing portfolio page...');
+                    initUnicornAnimation();
+                } else if (pageId === 'settings') {
+                    console.log('⚙️ Settings page loaded');
+                    // Settings page initialization if needed
+                }
+            }, 100); // Small delay to ensure DOM is ready
         }
 
         // Initialize Shiba Animation for different pages
@@ -2832,7 +2837,7 @@ class MainActivity : Activity() {
                     console.log('🔑 Wallet loaded from Android environment');
                 } else {
                     // Fallback to hardcoded deployed wallet
-                    walletPublicKeyStr = "5qX8VcUJGhHwXuVUknPa2TuQoKffWZnk5HPNUeUbpJnA";
+                    walletPublicKeyStr = "3kFU8bBJm7epTYcJUGhPCxFfyK52o2WmyMQX9SbDWr48";
                     console.log('🔑 Using fallback wallet address');
                 }
                 
@@ -2939,54 +2944,7 @@ class MainActivity : Activity() {
             }, 1000);
         }
 
-        // Add wallet testing function
-        async function testWalletConnection() {
-            showStatusMessage("🧪 Testing real wallet connection...", "info");
-            
-            if (!isWalletConnected || !walletPublicKey) {
-                showStatusMessage("❌ No wallet connected. Please connect first.", "error");
-                return;
-            }
-            
-            try {
-                // Test 1: Check wallet connection
-                const publicKeyStr = walletPublicKey.toString();
-                console.log('✅ Wallet public key:', publicKeyStr);
-                showStatusMessage("✅ Test 1/5: Wallet public key verified", "info");
-                
-                // Test 2: Check Solana connection
-                if (connection) {
-                    const latestBlockhash = await connection.getLatestBlockhash();
-                    console.log('✅ Solana connection active. Latest blockhash:', latestBlockhash.blockhash.slice(0, 8) + '...');
-                    showStatusMessage("✅ Test 2/5: Solana devnet connection active", "info");
-                }
-                
-                // Test 3: Check SOL balance
-                const balance = await connection.getBalance(walletPublicKey);
-                const solBalance = balance / window.solanaWeb3.LAMPORTS_PER_SOL;
-                console.log('✅ SOL Balance:', solBalance);
-                showStatusMessage("✅ Test 3/5: SOL balance " + solBalance.toFixed(4) + " SOL", "info");
-                
-                // Test 4: Check token balances
-                const tokenBalances = await fetchTokenBalances();
-                console.log('✅ Token balances:', tokenBalances);
-                showStatusMessage("✅ Test 4/5: Token balances - BONK: " + tokenBalances.bonk.toFixed(0) + ", USDC: " + tokenBalances.usdc.toFixed(2), "info");
-                
-                // Test 5: Check price API
-                const prices = await fetchRealTimePrices();
-                console.log('✅ Live prices:', prices);
-                showStatusMessage("✅ Test 5/5: Live prices - SOL: $" + prices.sol.price + ", BONK: $" + prices.bonk.price, "info");
-                
-                // Test 6: Try to refresh full balance
-                await updateRealWalletBalance();
-                
-                showStatusMessage("🎉 All wallet tests passed! Real devnet integration working perfectly.", "success");
-                
-            } catch (error) {
-                console.error('❌ Wallet test failed:', error);
-                showStatusMessage("⚠️ Wallet test failed: " + error.message, "error");
-            }
-        }
+        // Wallet balance update functions
 
         async function updateWalletBalance() {
             // Legacy function for compatibility - redirects to real balance update
@@ -3030,37 +2988,94 @@ class MainActivity : Activity() {
             };
             
             try {
-                // Try Solscan API first for enhanced data
-                const solscanBalance = await fetchSolscanTokenBalances();
-                if (solscanBalance.success) {
-                    return solscanBalance.data;
+                console.log('📊 Fetching token balances for wallet:', walletPublicKey.toString());
+                
+                // Direct token account addresses from our deployment
+                const BONK_TOKEN_ACCOUNT = '6yp5wqt3XPV9aUEGah1iG4Yx2zTpPQGRXyfp5GAmddsu';
+                const USDC_TOKEN_ACCOUNT = 'Ba56XXsmMRdwshZiwkUrsjvfUaDBVRgk4EyPzVdzaGu7';
+                
+                // Method 1: Try direct token account lookup first
+                try {
+                    console.log('🔍 Checking BONK token account:', BONK_TOKEN_ACCOUNT);
+                    const bonkAccountInfo = await connection.getAccountInfo(new window.solanaWeb3.PublicKey(BONK_TOKEN_ACCOUNT));
+                    if (bonkAccountInfo) {
+                        const bonkParsed = await connection.getParsedAccountInfo(new window.solanaWeb3.PublicKey(BONK_TOKEN_ACCOUNT));
+                        if (bonkParsed.value && bonkParsed.value.data.parsed) {
+                            const bonkAmount = bonkParsed.value.data.parsed.info.tokenAmount;
+                            tokenBalances.bonk = parseFloat(bonkAmount.uiAmountString || bonkAmount.uiAmount || 0);
+                            console.log('✅ BONK balance from direct account:', tokenBalances.bonk);
+                        }
+                    }
+                    
+                    console.log('🔍 Checking USDC token account:', USDC_TOKEN_ACCOUNT);
+                    const usdcAccountInfo = await connection.getAccountInfo(new window.solanaWeb3.PublicKey(USDC_TOKEN_ACCOUNT));
+                    if (usdcAccountInfo) {
+                        const usdcParsed = await connection.getParsedAccountInfo(new window.solanaWeb3.PublicKey(USDC_TOKEN_ACCOUNT));
+                        if (usdcParsed.value && usdcParsed.value.data.parsed) {
+                            const usdcAmount = usdcParsed.value.data.parsed.info.tokenAmount;
+                            tokenBalances.usdc = parseFloat(usdcAmount.uiAmountString || usdcAmount.uiAmount || 0);
+                            console.log('✅ USDC balance from direct account:', tokenBalances.usdc);
+                        }
+                    }
+                } catch (directError) {
+                    console.log('⚠️ Direct token account method failed:', directError.message);
                 }
                 
-                // Fallback to direct RPC calls
-                console.log('📊 Using RPC fallback for token balances...');
-                
-                // Deployed token mint addresses from devnet
-                const MOCK_BONK_MINT = '8wg7hAtfF1eJZLLb7TCHZhVuS3NkBdm8R7dtRPvn9BiP';
-                const MOCK_USDC_MINT = '9nccat6babNG1u32Xu6d8XojGy7BGH6shwCLzoCrZWTT';
-                
-                // Get all token accounts for the wallet
-                const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-                    walletPublicKey,
-                    { programId: window.solanaWeb3.TOKEN_PROGRAM_ID }
-                );
-                
-                tokenAccounts.value.forEach(accountInfo => {
-                    const mint = accountInfo.account.data.parsed.info.mint;
-                    const amount = accountInfo.account.data.parsed.info.tokenAmount.uiAmount;
+                // Method 2: Fallback to getParsedTokenAccountsByOwner if direct method didn't work
+                if (tokenBalances.bonk === 0 && tokenBalances.usdc === 0) {
+                    console.log('📊 Using getParsedTokenAccountsByOwner fallback...');
                     
-                    if (mint === MOCK_BONK_MINT) {
-                        tokenBalances.bonk = amount || 0;
-                    } else if (mint === MOCK_USDC_MINT) {
-                        tokenBalances.usdc = amount || 0;
-                    }
-                });
+                    // Deployed token mint addresses from devnet
+                    const MOCK_BONK_MINT = 'GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5';
+                    const MOCK_USDC_MINT = 'Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7';
+                    
+                    // Get all token accounts for the wallet
+                    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+                        walletPublicKey,
+                        { programId: window.solanaWeb3.TOKEN_PROGRAM_ID }
+                    );
+                    
+                    console.log('📊 Found', tokenAccounts.value.length, 'token accounts');
+                    
+                    tokenAccounts.value.forEach((accountInfo, i) => {
+                        const mint = accountInfo.account.data.parsed.info.mint;
+                        const amount = accountInfo.account.data.parsed.info.tokenAmount.uiAmount;
+                        const accountAddress = accountInfo.pubkey.toString();
+                        
+                        console.log('🔍 Token account ' + (i + 1) + ':', {
+                            address: accountAddress,
+                            mint: mint,
+                            amount: amount
+                        });
+                        
+                        if (mint === MOCK_BONK_MINT) {
+                            tokenBalances.bonk = amount || 0;
+                            console.log('✅ Found BONK balance:', tokenBalances.bonk);
+                        } else if (mint === MOCK_USDC_MINT) {
+                            tokenBalances.usdc = amount || 0;
+                            console.log('✅ Found USDC balance:', tokenBalances.usdc);
+                        }
+                    });
+                }
                 
-                console.log('📊 Token balances fetched via RPC:', tokenBalances);
+                // Method 3: Try Solscan API as additional verification
+                try {
+                    const solscanBalance = await fetchSolscanTokenBalances();
+                    if (solscanBalance.success && solscanBalance.data) {
+                        console.log('� Solscan verification:', solscanBalance.data);
+                        // Use Solscan data if our direct methods didn't find balances
+                        if (tokenBalances.bonk === 0 && solscanBalance.data.bonk > 0) {
+                            tokenBalances.bonk = solscanBalance.data.bonk;
+                        }
+                        if (tokenBalances.usdc === 0 && solscanBalance.data.usdc > 0) {
+                            tokenBalances.usdc = solscanBalance.data.usdc;
+                        }
+                    }
+                } catch (solscanError) {
+                    console.log('⚠️ Solscan verification failed:', solscanError.message);
+                }
+                
+                console.log('📊 Final token balances:', tokenBalances);
                 return tokenBalances;
                 
             } catch (error) {
@@ -3323,7 +3338,7 @@ class MainActivity : Activity() {
                     '<!-- BONK Balance -->' +
                     '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">' +
                         '<div style="display: flex; align-items: center; gap: 6px;">' +
-                            '<span style="color: var(--bonk-orange); font-size: 12px;">🚀 mBONK</span>' +
+                            '<span style="color: var(--bonk-orange); font-size: 12px;">🚀 BONK</span>' +
                             '<span style="color: var(--text-secondary); font-size: 11px;">' + formatNumber(safeBonkBalance, 0) + '</span>' +
                         '</div>' +
                         '<div style="display: flex; align-items: center; gap: 4px;">' +
@@ -3335,7 +3350,7 @@ class MainActivity : Activity() {
                     '<!-- USDC Balance -->' +
                     '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
                         '<div style="display: flex; align-items: center; gap: 6px;">' +
-                            '<span style="color: var(--cyber-cyan); font-size: 12px;">💵 mUSDC</span>' +
+                            '<span style="color: var(--cyber-cyan); font-size: 12px;">💵 USDC</span>' +
                             '<span style="color: var(--text-secondary); font-size: 11px;">' + formatNumber(safeUsdcBalance, 2) + '</span>' +
                         '</div>' +
                         '<div style="display: flex; align-items: center; gap: 4px;">' +
@@ -3370,14 +3385,13 @@ class MainActivity : Activity() {
         }
 
         function updateWalletUI() {
-            const connectButton = document.querySelector('button[onclick="connectWallet()"]');
+            const buttonContainer = document.querySelector('div[style*="display: flex; gap: 8px"]');
             const walletInfo = document.querySelector('.connected-wallet-info');
             
             if (isWalletConnected && walletPublicKey) {
-                if (connectButton) {
-                    connectButton.textContent = 'Connected ✅';
-                    connectButton.style.background = 'var(--defi-green)';
-                    connectButton.onclick = () => disconnectWallet();
+                if (buttonContainer) {
+                    // Replace all buttons with just the connected button
+                    buttonContainer.innerHTML = '<button class="action-button secondary" onclick="disconnectWallet()" style="background: var(--defi-green);">Connected ✅</button>';
                 }
                 
                 if (walletInfo) {
@@ -3387,6 +3401,17 @@ class MainActivity : Activity() {
                             walletPublicKey.toString().slice(0, 8) + '...' + walletPublicKey.toString().slice(-4) + ' • Devnet' +
                         '</div>';
                 }
+            } else {
+                if (buttonContainer) {
+                    // Show only the connect button when not connected
+                    buttonContainer.innerHTML = '<button class="action-button secondary" onclick="connectWallet()">Connect</button>';
+                }
+                
+                if (walletInfo) {
+                    walletInfo.innerHTML = 
+                        '<div style="color: var(--text-primary); font-weight: 600;">Connected Wallet</div>' +
+                        '<div style="color: var(--text-secondary); font-size: 12px;">Not Connected</div>';
+                }
             }
         }
 
@@ -3395,13 +3420,11 @@ class MainActivity : Activity() {
             isWalletConnected = false;
             walletPublicKey = null;
             
-            const connectButton = document.querySelector('button[onclick="disconnectWallet()"]');
+            const buttonContainer = document.querySelector('div[style*="display: flex; gap: 8px"]');
             const walletInfo = document.querySelector('.connected-wallet-info');
             
-            if (connectButton) {
-                connectButton.textContent = 'Connect';
-                connectButton.style.background = '';
-                connectButton.onclick = () => connectWallet();
+            if (buttonContainer) {
+                buttonContainer.innerHTML = '<button class="action-button secondary" onclick="connectWallet()">Connect</button>';
             }
             
             if (walletInfo) {
@@ -3839,12 +3862,12 @@ class MainActivity : Activity() {
         // =========================================
         // Generated: 2025-07-31T07:59:44.682Z
         // Network: devnet
-        // Deployer: 5qX8VcUJGhHwXuVUknPa2TuQoKffWZnk5HPNUeUbpJnA
+        // Deployer: 3kFU8bBJm7epTYcJUGhPCxFfyK52o2WmyMQX9SbDWr48
         
         const DEVNET_TOKENS = {
             MOCK_BONK: {
                 name: 'Mock BONK',
-                symbol: 'mBONK',
+                symbol: 'BONK',
                 mint: '8wg7hAtfF1eJZLLb7TCHZhVuS3NkBdm8R7dtRPvn9BiP',
                 decimals: 5,
                 supply: '9300000000000000000',
@@ -3854,7 +3877,7 @@ class MainActivity : Activity() {
             },
             MOCK_USDC: {
                 name: 'Mock USD Coin',
-                symbol: 'mUSDC',
+                symbol: 'USDC',
                 mint: '9nccat6babNG1u32Xu6d8XojGy7BGH6shwCLzoCrZWTT',
                 decimals: 6,
                 supply: '10000000000000',
@@ -4050,10 +4073,28 @@ class MainActivity : Activity() {
             }
         }
 
+        // Animation state management
+        let animationStates = {
+            astronaut: false,
+            unicorn: false,
+            smilingDog: false,
+            shibaNFT: false
+        };
+
         // Initialize Astronaut Dog Lottie animation
         function initAstronautDogAnimation() {
+            if (animationStates.astronaut) {
+                console.log('🚀 Astronaut Dog animation already initialized');
+                return;
+            }
+            
             console.log('🚀 Initializing Astronaut Dog space companion...');
             const container = document.getElementById('astronaut-animation');
+            
+            if (!container) {
+                console.error('❌ Astronaut animation container not found');
+                return;
+            }
             
             if (astronautDogAnimationData && typeof astronautDogAnimationData === 'object') {
                 console.log('🎉 Loading authentic Astronaut Dog animation...');
@@ -4095,24 +4136,33 @@ class MainActivity : Activity() {
                 
                 lottieAnimation.addEventListener('DOMLoaded', function() {
                     console.log('✅ Astronaut Dog space companion ready!');
+                    animationStates.astronaut = true;
                     
                     // Add floating effect
                     setInterval(() => {
                         if (lottieAnimation) {
                             const container = document.getElementById('astronaut-animation');
-                            container.style.transform = 'translateY(' + (Math.sin(Date.now() / 1000) * 5) + 'px)';
+                            if (container) {
+                                container.style.transform = 'translateY(' + (Math.sin(Date.now() / 1000) * 5) + 'px)';
+                            }
                         }
                     }, 50);
                 });
                 
             } else {
                 console.error('❌ No valid Astronaut Dog animation data found');
+                animationStates.astronaut = false;
                 container.innerHTML = '<div style="color: var(--text-error); text-align: center;">Unable to load space companion</div>';
             }
         }
 
         // Initialize Happy Unicorn Dog Lottie animation with enhanced error handling
         function initUnicornAnimation() {
+            if (animationStates.unicorn) {
+                console.log('🦄 Happy Unicorn Dog animation already initialized');
+                return;
+            }
+            
             console.log('🦄 Initializing Happy Unicorn Dog portfolio companion...');
             const container = document.getElementById('unicorn-animation');
             
@@ -4181,6 +4231,7 @@ class MainActivity : Activity() {
                 
                 unicornLottieAnimation.addEventListener('DOMLoaded', function() {
                     console.log('✅ Happy Unicorn Dog portfolio companion ready!');
+                    animationStates.unicorn = true;
                     
                     // Update status
                     const statusElement = document.getElementById('unicornStatus');
@@ -4210,11 +4261,13 @@ class MainActivity : Activity() {
                 
                 unicornLottieAnimation.addEventListener('data_failed', function() {
                     console.error('❌ Unicorn animation data failed to load');
+                    animationStates.unicorn = false;
                     showFallbackUnicorn(container);
                 });
                 
             }).catch(error => {
                 console.error('❌ Failed to initialize unicorn animation:', error);
+                animationStates.unicorn = false;
                 showFallbackUnicorn(container);
             });
         }
@@ -4252,6 +4305,11 @@ class MainActivity : Activity() {
         let smilingDogLottieAnimation = null;
         
         function initSmilingDogAnimation() {
+            if (animationStates.smilingDog) {
+                console.log('😊 Smiling Dog animation already initialized');
+                return;
+            }
+            
             console.log('😊 Initializing Smiling Dog trading companion...');
             const container = document.getElementById('smiling-dog-animation');
             
@@ -4395,6 +4453,11 @@ class MainActivity : Activity() {
 
         // Initialize Shiba NFT Artist Animation (matching Portfolio structure)
         function initShibaNFTAnimation() {
+            if (animationStates.shibaNFT) {
+                console.log('🎨 Shiba NFT Artist animation already initialized');
+                return;
+            }
+            
             console.log('🎨 Initializing Shiba NFT Artist...');
             const container = document.getElementById('shiba-nft-animation');
             
@@ -4750,7 +4813,7 @@ class MainActivity : Activity() {
             // In a real app, you would open the browser with these URLs
             // For demo purposes, we'll just show the information
             setTimeout(() => {
-                showStatusMessage('💡 Token addresses: mBONK (' + DEVNET_TOKENS.MOCK_BONK.mint.substring(0, 8) + '...) and mUSDC (' + DEVNET_TOKENS.MOCK_USDC.mint.substring(0, 8) + '...)', 'success');
+                showStatusMessage('💡 Token addresses: BONK (' + DEVNET_TOKENS.MOCK_BONK.mint.substring(0, 8) + '...) and USDC (' + DEVNET_TOKENS.MOCK_USDC.mint.substring(0, 8) + '...)', 'success');
             }, 1500);
         }
         
@@ -4776,14 +4839,19 @@ class MainActivity : Activity() {
                 // Initialize voice recognition
                 initVoiceRecognition();
                 
-                // Initialize Astronaut Dog animation (only when on astronaut page)
-                if (document.getElementById('astronaut-page').classList.contains('active')) {
-                    initAstronautDogAnimation();
-                }
+                // Always initialize companion page animations on startup (default page)
+                console.log('🚀 Initializing default companion page...');
+                initAstronautDogAnimation();
                 
-                // Initialize Happy Unicorn Dog animation (only when on portfolio page)
+                // Initialize other page animations only if they're active
                 if (document.getElementById('portfolio-page').classList.contains('active')) {
                     initUnicornAnimation();
+                }
+                if (document.getElementById('trading-page').classList.contains('active')) {
+                    initSmilingDogAnimation();
+                }
+                if (document.getElementById('nft-page').classList.contains('active')) {
+                    initShibaNFTAnimation();
                 }
                 
                 // Initialize swap calculator
@@ -4806,6 +4874,14 @@ class MainActivity : Activity() {
                 // Continue with basic initialization even if animations fail
                 createParticles();
                 initVoiceRecognition();
+                
+                // Still try to initialize companion animation even on fallback
+                try {
+                    initAstronautDogAnimation();
+                } catch (animError) {
+                    console.warn('⚠️ Companion animation fallback failed:', animError);
+                }
+                
                 calculateSwap();
                 
                 // Start real-time price updates

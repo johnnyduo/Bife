@@ -1,0 +1,31 @@
+{
+  "network": "devnet",
+  "timestamp": "2025-07-31T14:29:42.248Z",
+  "deployer": "3kFU8bBJm7epTYcJUGhPCxFfyK52o2WmyMQX9SbDWr48",
+  "deployerBalance": 4.99091396,
+  "tokens": {
+    "BONK": {
+      "name": "BONK",
+      "symbol": "BONK",
+      "decimals": 5,
+      "mint": "GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5",
+      "tokenAccount": "6yp5wqt3XPV9aUEGah1iG4Yx2zTpPQGRXyfp5GAmddsu",
+      "authority": "3kFU8bBJm7epTYcJUGhPCxFfyK52o2WmyMQX9SbDWr48",
+      "supply": "930000000000000000",
+      "targetSupply": 9300000000000,
+      "targetSupplyFormatted": "9,300,000,000,000"
+    },
+    "USDC": {
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "decimals": 6,
+      "mint": "Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7",
+      "tokenAccount": "Ba56XXsmMRdwshZiwkUrsjvfUaDBVRgk4EyPzVdzaGu7",
+      "authority": "3kFU8bBJm7epTYcJUGhPCxFfyK52o2WmyMQX9SbDWr48",
+      "supply": "1000000000000",
+      "targetSupply": 1000000,
+      "targetSupplyFormatted": "1,000,000"
+    }
+  },
+  "mintTimestamp": "2025-07-31T14:29:42.373Z"
+}
