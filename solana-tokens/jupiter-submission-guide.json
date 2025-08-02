@@ -1,0 +1,39 @@
+{
+  "title": "Jupiter Token Submission Guide",
+  "description": "How to make custom tokens tradable on Jupiter",
+  "steps": [
+    {
+      "step": 1,
+      "title": "Create Liquidity Pool",
+      "description": "Create actual liquidity pool on Raydium or Orca",
+      "action": "Use Raydium UI or SDK to create pool with initial liquidity"
+    },
+    {
+      "step": 2,
+      "title": "Submit to Jupiter",
+      "description": "Submit token to Jupiter registry",
+      "action": "Create PR to https://github.com/jup-ag/token-list with token metadata"
+    },
+    {
+      "step": 3,
+      "title": "Wait for Indexing",
+      "description": "Jupiter needs to index the new token",
+      "action": "Usually takes 24-48 hours after pool creation"
+    },
+    {
+      "step": 4,
+      "title": "Alternative: Use Strict List",
+      "description": "Use Jupiter strict list parameter",
+      "action": "Add strictList=false to quote requests for new tokens"
+    }
+  ],
+  "immediateWorkaround": {
+    "title": "Immediate Testing Workaround",
+    "description": "For testing purposes, use well-known devnet tokens",
+    "tokens": {
+      "Devnet USDC": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+      "Devnet SOL": "So11111111111111111111111111111111111111112",
+      "Sample Token": "2tWC4JAdL4AxEFJWt8DFvL2y8uqq1KZWF1qSAV3xd3JG"
+    }
+  }
+}

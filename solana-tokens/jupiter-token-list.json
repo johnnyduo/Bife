@@ -1,0 +1,53 @@
+{
+  "name": "Bife Custom Tokens",
+  "logoURI": "https://bonk.dog/logo.png",
+  "keywords": [
+    "bife",
+    "custom",
+    "devnet"
+  ],
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "tags": {
+    "custom-token": {
+      "name": "Custom Token",
+      "description": "Custom token for Bife app"
+    }
+  },
+  "timestamp": "2025-08-02T05:02:04.927Z",
+  "tokens": [
+    {
+      "chainId": 103,
+      "address": "GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5",
+      "symbol": "MOCK_BONK",
+      "name": "Mock Bonk Token",
+      "decimals": 9,
+      "logoURI": "https://bonk.dog/logo.png",
+      "tags": [
+        "custom-token"
+      ],
+      "extensions": {
+        "coingeckoId": "bonk",
+        "website": "https://bonk.dog"
+      }
+    },
+    {
+      "chainId": 103,
+      "address": "Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7",
+      "symbol": "MOCK_USDC",
+      "name": "Mock USDC Token",
+      "decimals": 6,
+      "logoURI": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
+      "tags": [
+        "custom-token"
+      ],
+      "extensions": {
+        "coingeckoId": "usdc",
+        "website": "https://bonk.dog"
+      }
+    }
+  ]
+}

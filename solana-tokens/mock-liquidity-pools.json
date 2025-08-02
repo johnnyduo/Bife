@@ -1,0 +1,50 @@
+[
+  {
+    "id": "GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5-Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7",
+    "baseMint": "GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5",
+    "quoteMint": "Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7",
+    "baseSymbol": "MOCK_BONK",
+    "quoteSymbol": "MOCK_USDC",
+    "baseDecimals": 9,
+    "quoteDecimals": 6,
+    "baseReserve": "1000000000000000",
+    "quoteReserve": "10000000000",
+    "lpMint": "43WUbhgSFPqDHuZyq52nkPSZt7k6c745wB39Ej68dRAX",
+    "marketId": "7YyCaKbAtsp7CquSdkTxU1hM6pScsNsVMFT6YFXnVHUt",
+    "price": 0.00001,
+    "volume24h": "50000000000",
+    "fees24h": "100000000"
+  },
+  {
+    "id": "GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5-So11111111111111111111111111111111111111112",
+    "baseMint": "GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5",
+    "quoteMint": "So11111111111111111111111111111111111111112",
+    "baseSymbol": "MOCK_BONK",
+    "quoteSymbol": "SOL",
+    "baseDecimals": 9,
+    "quoteDecimals": 9,
+    "baseReserve": "500000000000000",
+    "quoteReserve": "10000000000",
+    "lpMint": "G12nu67nHwtNe1Qe9jecsA1M71sCUi457uuP2jfRuuiS",
+    "marketId": "613nW63kNeNiVuVaPKH1ebgEB4Adq9kWp6K3TxX5AQD7",
+    "price": 1e-9,
+    "volume24h": "25000000000",
+    "fees24h": "50000000"
+  },
+  {
+    "id": "Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7-So11111111111111111111111111111111111111112",
+    "baseMint": "Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7",
+    "quoteMint": "So11111111111111111111111111111111111111112",
+    "baseSymbol": "MOCK_USDC",
+    "quoteSymbol": "SOL",
+    "baseDecimals": 6,
+    "quoteDecimals": 9,
+    "baseReserve": "500000000000000",
+    "quoteReserve": "10000000000",
+    "lpMint": "867DBTmdHCBSCx8h9sZzFRrisvZ9476UXgu4heCixQ9q",
+    "marketId": "7ABW8NX2NNN1M5KLpEhLmwM37pm8jYPEmqNpLLXhoFZG",
+    "price": 0.000001,
+    "volume24h": "25000000000",
+    "fees24h": "50000000"
+  }
+]
