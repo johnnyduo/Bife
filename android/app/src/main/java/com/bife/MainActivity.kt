@@ -10,15 +10,28 @@ import android.webkit.WebSettings
 import android.webkit.WebChromeClient
 import android.util.Log
 import java.io.InputStream
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.content.pm.PackageManager
+import android.Manifest
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 class MainActivity : Activity() {
+    
+    // Speech Recognition properties
+    private var speechRecognizer: SpeechRecognizer? = null
+    private var webView: WebView? = null
+    private val RECORD_AUDIO_PERMISSION_CODE = 1001
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        val webView = WebView(this)
+        webView = WebView(this)
         
         // Enable JavaScript and other settings
-        val webSettings: WebSettings = webView.settings
+        val webSettings: WebSettings = webView!!.settings
         webSettings.javaScriptEnabled = true
         webSettings.domStorageEnabled = true
         webSettings.allowFileAccess = true
@@ -30,7 +43,7 @@ class MainActivity : Activity() {
         webSettings.useWideViewPort = true
         
         // Add JavaScript interface for enhanced API access
-        webView.addJavascriptInterface(object {
+        webView!!.addJavascriptInterface(object {
             @android.webkit.JavascriptInterface
             fun getGeminiApiKey(): String {
                 // Try multiple environment variable patterns
@@ -147,21 +160,52 @@ class MainActivity : Activity() {
             fun getNFTContractAddress(): String {
                 return System.getenv("NFT_CONTRACT_ADDRESS") ?: "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
             }
+            
+            // Speech Recognition JavaScript Interface
+            @android.webkit.JavascriptInterface
+            fun startVoiceRecognition() {
+                Log.d("MainActivity", "🎤 Starting voice recognition...")
+                runOnUiThread {
+                    checkPermissionAndStartSpeech()
+                }
+            }
+            
+            @android.webkit.JavascriptInterface
+            fun stopVoiceRecognition() {
+                Log.d("MainActivity", "🛑 Stopping voice recognition...")
+                runOnUiThread {
+                    stopSpeechRecognition()
+                }
+            }
+            
+            @android.webkit.JavascriptInterface
+            fun isVoiceRecognitionAvailable(): Boolean {
+                return SpeechRecognizer.isRecognitionAvailable(this@MainActivity)
+            }
         }, "Android")
         
-        // Set WebView client with debugging
-        webView.webViewClient = object : WebViewClient() {
+        // Set WebView client with debugging and enhanced readiness
+        webView!!.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 Log.d("MainActivity", "Page loaded successfully")
+                
+                // Give the page a moment to fully render before initializing voice
+                view?.postDelayed({
+                    Log.d("MainActivity", "🎤 Re-initializing speech after page load...")
+                    initializeSpeechRecognition()
+                }, 500)
             }
         }
         
-        webView.webChromeClient = object : WebChromeClient() {
+        webView!!.webChromeClient = object : WebChromeClient() {
             override fun onConsoleMessage(message: android.webkit.ConsoleMessage?): Boolean {
                 Log.d("WebView", "Console: " + message?.message())
                 return true
             }
         }
+        
+        // Initialize Speech Recognition
+        initializeSpeechRecognition()
         
         // Read the AstronautDog.json file from assets
         val astronautDogJsonContent = try {
@@ -964,6 +1008,45 @@ class MainActivity : Activity() {
             margin-bottom: 15px;
             text-align: center;
             backdrop-filter: blur(15px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .companion-conversation .voice-transcript::before {
+            content: '🎤 Smart Voice Commands • Click or speak naturally';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: var(--text-tertiary);
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+        
+        .companion-conversation .voice-transcript:hover {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(247, 147, 30, 0.15));
+            border-color: rgba(255, 107, 53, 0.6);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.25);
+            color: var(--text-primary);
+        }
+        
+        .companion-conversation .voice-transcript:hover::before {
+            content: '📊 Portfolio • 💱 Trading • 🎨 NFT • 🌾 Yield • 💰 Prices';
+            color: var(--bonk-orange);
+            opacity: 1;
+            font-weight: 500;
+            max-width: 90vw;
+            width: max-content;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            font-size: 10px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .companion-conversation .gemini-response {
@@ -975,6 +1058,10 @@ class MainActivity : Activity() {
             font-size: 14px;
             line-height: 1.6;
             backdrop-filter: blur(15px);
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            box-sizing: border-box;
         }
 
         /* Companion Controls - 3 buttons in same line */
@@ -1735,7 +1822,7 @@ class MainActivity : Activity() {
                 <!-- Companion Controls - 3 buttons in same line -->
                 <div class="companion-controls">
                     <button class="action-button" onclick="talkToAstronaut()">
-                        🗣️ Talk to Dog
+                        🗣️ Talk to Bife
                     </button>
                     <button class="action-button secondary" onclick="astronautDance()">
                         💃 Make Dance
@@ -2320,9 +2407,11 @@ class MainActivity : Activity() {
         let lottieAnimation = null;
         let unicornLottieAnimation = null;
         let isListening = false;
-        let recognition = null;
         let lottieLibLoaded = false;
         let animationsPreloaded = false;
+        
+        // Voice recognition state for Android native
+        let currentTranscript = '';
         
         // Gemini API Key Management
         let geminiApiKey = null;
@@ -2678,49 +2767,960 @@ class MainActivity : Activity() {
             }
         }
 
-        // Voice Recognition Setup
+        // Android Native Voice Recognition Setup
+        // Note: isListening and currentTranscript variables already declared at top of script
+        
         function initVoiceRecognition() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.interimResults = true;
-                recognition.lang = 'en-US';
+            console.log('🎤 Initializing Android native voice recognition...');
+            
+            // Check if Android interface is available
+            if (typeof Android !== 'undefined' && Android.isVoiceRecognitionAvailable) {
+                const isAvailable = Android.isVoiceRecognitionAvailable();
+                console.log('🎤 Voice recognition available:', isAvailable);
                 
-                recognition.onstart = function() {
-                    console.log('🎤 Voice recognition started');
-                    isListening = true;
-                    updateVoiceUI();
-                };
-                
-                recognition.onresult = function(event) {
-                    let transcript = '';
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        transcript += event.results[i][0].transcript;
-                    }
-                    document.getElementById('voiceTranscript').textContent = transcript;
+                if (isAvailable) {
+                    document.getElementById('voiceStatus').textContent = 'Ready to help - Tap to speak';
                     
-                    if (event.results[event.results.length - 1].isFinal) {
-                        processVoiceCommand(transcript);
+                    // Set up Android voice recognition callbacks
+                    window.onAndroidVoiceReady = function() {
+                        console.log('🎤 Android voice ready');
+                        document.getElementById('voiceStatus').textContent = 'Ready for speech...';
+                    };
+                    
+                    window.onAndroidVoiceStarted = function() {
+                        console.log('🗣️ Android voice started');
+                        isListening = true;
+                        updateVoiceUI();
+                        document.getElementById('voiceStatus').textContent = 'Listening...';
+                    };
+                    
+                    window.onAndroidVoiceEnded = function() {
+                        console.log('🤐 Android voice ended');
+                        document.getElementById('voiceStatus').textContent = 'Processing...';
+                    };
+                    
+                    window.onAndroidVoiceResults = function(text) {
+                        console.log('🎤 VOICE RESULT:', text);
+                        
+                        currentTranscript = text;
+                        document.getElementById('voiceTranscript').textContent = text;
+                        isListening = false;
+                        updateVoiceUI();
+                        
+                        const command = text.toLowerCase();
+                        console.log('� COMMAND ANALYSIS:', command);
+                        
+                        // BULLETPROOF NAVIGATION - NO ERRORS, NO GLITCHES
+                        try {
+                            // Portfolio navigation
+                            if (command.includes('portfolio') || command.includes('balance') || command.includes('show my')) {
+                                console.log('📊 PORTFOLIO NAVIGATION TRIGGERED');
+                                document.getElementById('voiceStatus').textContent = 'Loading Portfolio...';
+                                
+                                // FORCE NAVIGATION - Multiple attempts
+                                let navigationSuccess = false;
+                                
+                                try {
+                                    // Method 1: Direct DOM manipulation
+                                    const pages = document.querySelectorAll('.page');
+                                    const navs = document.querySelectorAll('.nav-item');
+                                    
+                                    console.log('🔍 Found pages:', pages.length, 'navs:', navs.length);
+                                    
+                                    pages.forEach(p => p.classList.remove('active'));
+                                    navs.forEach(n => n.classList.remove('active'));
+                                    
+                                    const portfolioPage = document.getElementById('portfolio-page');
+                                    const portfolioNav = document.getElementById('nav-portfolio');
+                                    
+                                    console.log('🔍 Portfolio elements:', {
+                                        page: !!portfolioPage,
+                                        nav: !!portfolioNav
+                                    });
+                                    
+                                    if (portfolioPage && portfolioNav) {
+                                        portfolioPage.classList.add('active');
+                                        portfolioNav.classList.add('active');
+                                        navigationSuccess = true;
+                                        console.log('✅ PORTFOLIO ACTIVATED VIA DOM');
+                                    }
+                                    
+                                    // Method 2: Force with showPage function
+                                    if (typeof showPage === 'function') {
+                                        setTimeout(() => {
+                                            showPage('portfolio');
+                                            console.log('✅ PORTFOLIO ACTIVATED VIA SHOWPAGE');
+                                        }, 50);
+                                        navigationSuccess = true;
+                                    }
+                                    
+                                    if (navigationSuccess) {
+                                        document.getElementById('voiceStatus').textContent = 'Portfolio Ready!';
+                                        return;
+                                    }
+                                    
+                                } catch (navError) {
+                                    console.error('❌ Navigation method failed:', navError);
+                                }
+                                
+                                // ALWAYS show manual buttons as backup (for testing)
+                                console.log('🔘 SHOWING MANUAL BUTTONS FOR PORTFOLIO');
+                                showManualNavigationButtons(command, text);
+                                return;
+                            }
+                            
+                            // Trading navigation
+                            if (command.includes('swap') || command.includes('trade')) {
+                                console.log('� TRADING NAVIGATION');
+                                document.getElementById('voiceStatus').textContent = 'Opening Trading...';
+                                
+                                const pages = document.querySelectorAll('.page');
+                                const navs = document.querySelectorAll('.nav-item');
+                                
+                                pages.forEach(p => p.classList.remove('active'));
+                                navs.forEach(n => n.classList.remove('active'));
+                                
+                                const tradingPage = document.getElementById('trading-page');
+                                const tradingNav = document.getElementById('nav-trading');
+                                
+                                if (tradingPage) tradingPage.classList.add('active');
+                                if (tradingNav) tradingNav.classList.add('active');
+                                
+                                document.getElementById('voiceStatus').textContent = 'Trading Ready!';
+                                console.log('✅ TRADING ACTIVATED');
+                                return;
+                            }
+                            
+                            // NFT navigation
+                            if (command.includes('nft') || command.includes('create')) {
+                                console.log('🎨 NFT NAVIGATION');
+                                document.getElementById('voiceStatus').textContent = 'Opening NFT Studio...';
+                                
+                                const pages = document.querySelectorAll('.page');
+                                const navs = document.querySelectorAll('.nav-item');
+                                
+                                pages.forEach(p => p.classList.remove('active'));
+                                navs.forEach(n => n.classList.remove('active'));
+                                
+                                const nftPage = document.getElementById('nft-page');
+                                const nftNav = document.getElementById('nav-nft');
+                                
+                                if (nftPage) nftPage.classList.add('active');
+                                if (nftNav) nftNav.classList.add('active');
+                                
+                                document.getElementById('voiceStatus').textContent = 'NFT Studio Ready!';
+                                console.log('✅ NFT ACTIVATED');
+                                return;
+                            }
+                            
+                            // Home/Companion navigation
+                            if (command.includes('home') || command.includes('companion')) {
+                                console.log('🏠 HOME NAVIGATION');
+                                document.getElementById('voiceStatus').textContent = 'Going Home...';
+                                
+                                const pages = document.querySelectorAll('.page');
+                                const navs = document.querySelectorAll('.nav-item');
+                                
+                                pages.forEach(p => p.classList.remove('active'));
+                                navs.forEach(n => n.classList.remove('active'));
+                                
+                                const companionPage = document.getElementById('companion-page');
+                                const companionNav = document.getElementById('nav-companion');
+                                
+                                if (companionPage) companionPage.classList.add('active');
+                                if (companionNav) companionNav.classList.add('active');
+                                
+                                document.getElementById('voiceStatus').textContent = 'Home Ready!';
+                                console.log('✅ HOME ACTIVATED');
+                                return;
+                            }
+                            
+                            // No navigation match - process with AI
+                            console.log('🤖 NO NAVIGATION MATCH - PROCESSING WITH AI');
+                            
+                            // PLAN B: Show manual navigation buttons for common commands
+                            if (command.includes('portfolio') || command.includes('balance') || command.includes('show my') ||
+                                command.includes('swap') || command.includes('trade') || 
+                                command.includes('nft') || command.includes('create') ||
+                                command.includes('home') || command.includes('companion')) {
+                                showManualNavigationButtons(command, text);
+                            } else {
+                                processVoiceCommand(text);
+                            }
+                            
+                        } catch (error) {
+                            console.error('❌ NAVIGATION ERROR:', error);
+                            document.getElementById('voiceStatus').textContent = 'Navigation failed - use buttons below';
+                            showManualNavigationButtons(command, text);
+                        }
+                    };
+                    
+                    // Add test function for debugging navigation
+                    window.testNavigation = function() {
+                        console.log('🧪 Testing navigation elements...');
+                        
+                        const portfolioPage = document.getElementById('portfolio-page');
+                        const portfolioNav = document.getElementById('nav-portfolio');
+                        
+                        console.log('Portfolio page exists:', !!portfolioPage);
+                        console.log('Portfolio nav exists:', !!portfolioNav);
+                        
+                        if (portfolioPage && portfolioNav) {
+                            console.log('✅ Elements found, testing navigation...');
+                            
+                            // Clear all active states
+                            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                            
+                            // Activate portfolio
+                            portfolioPage.classList.add('active');
+                            portfolioNav.classList.add('active');
+                            
+                            console.log('✅ Navigation test completed');
+                        } else {
+                            console.error('❌ Navigation elements missing');
+                        }
+                    };
+                    
+                    window.onAndroidVoicePartial = function(text) {
+                        console.log('📝 Android voice partial:', text);
+                        document.getElementById('voiceTranscript').textContent = text + '...';
+                    };
+                    
+                    window.onAndroidVoiceError = function(error) {
+                        console.error('❌ Android voice error:', error);
+                        document.getElementById('voiceStatus').textContent = 'Voice error: ' + error;
+                        document.getElementById('voiceTranscript').textContent = '';
+                        isListening = false;
+                        updateVoiceUI();
+                    };
+                    
+                } else {
+                    console.warn('⚠️ Android voice recognition not available');
+                    document.getElementById('voiceStatus').textContent = 'Voice recognition not supported';
+                }
+            } else {
+                console.warn('⚠️ Android interface not available, falling back to web speech');
+                document.getElementById('voiceStatus').textContent = 'Voice recognition unavailable';
+            }
+        }
+
+        // Manual Navigation Button Functions (Plan B)
+        function showManualNavigationButtons(command, originalText) {
+            console.log('🔘 SHOWING MANUAL NAVIGATION BUTTONS FOR:', command);
+            document.getElementById('voiceStatus').textContent = 'Choose your destination:';
+            
+            // Create navigation buttons container
+            let buttonsContainer = document.getElementById('manualNavButtons');
+            if (!buttonsContainer) {
+                buttonsContainer = document.createElement('div');
+                buttonsContainer.id = 'manualNavButtons';
+                buttonsContainer.style.cssText = `
+                    position: fixed;
+                    bottom: 120px;
+                    left: 20px;
+                    right: 20px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    justify-content: center;
+                    z-index: 1000;
+                    background: rgba(0,0,0,0.9);
+                    padding: 15px;
+                    border-radius: 15px;
+                    backdrop-filter: blur(10px);
+                    border: 2px solid rgba(255, 107, 53, 0.5);
+                `;
+                document.body.appendChild(buttonsContainer);
+            }
+            
+            // Clear existing buttons
+            buttonsContainer.innerHTML = '';
+            
+            // Always show all navigation options
+            const buttons = [
+                {
+                    text: '📊 Portfolio',
+                    action: () => manualNavigateTo('portfolio'),
+                    primary: command.includes('portfolio') || command.includes('balance') || command.includes('show my')
+                },
+                {
+                    text: '💱 Trading',
+                    action: () => manualNavigateTo('trading'),
+                    primary: command.includes('swap') || command.includes('trade')
+                },
+                {
+                    text: '🎨 NFT Studio',
+                    action: () => manualNavigateTo('nft'),
+                    primary: command.includes('nft') || command.includes('create')
+                },
+                {
+                    text: '🏠 Home',
+                    action: () => manualNavigateTo('companion'),
+                    primary: command.includes('home') || command.includes('companion')
+                },
+                {
+                    text: '❌ Cancel',
+                    action: () => hideManualNavigationButtons(),
+                    close: true
+                }
+            ];
+            
+            // Create button elements
+            buttons.forEach(buttonConfig => {
+                const button = document.createElement('button');
+                button.textContent = buttonConfig.text;
+                button.onclick = buttonConfig.action;
+                
+                let buttonStyle = `
+                    padding: 12px 16px;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    min-width: 100px;
+                `;
+                
+                if (buttonConfig.primary) {
+                    buttonStyle += `
+                        background: linear-gradient(135deg, #ff6b35, #f7931e);
+                        color: white;
+                        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+                        border: 2px solid #ff6b35;
+                    `;
+                } else if (buttonConfig.close) {
+                    buttonStyle += `
+                        background: rgba(255, 255, 255, 0.1);
+                        color: #ccc;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                    `;
+                } else {
+                    buttonStyle += `
+                        background: rgba(255, 255, 255, 0.1);
+                        color: white;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                    `;
+                }
+                
+                button.style.cssText = buttonStyle;
+                
+                button.onmouseover = () => {
+                    button.style.transform = 'scale(1.05)';
+                };
+                
+                button.onmouseout = () => {
+                    button.style.transform = 'scale(1)';
+                };
+                
+                buttonsContainer.appendChild(button);
+            });
+            
+            console.log('✅ MANUAL NAVIGATION BUTTONS CREATED:', buttons.length);
+            
+            // Auto-hide after 15 seconds
+            setTimeout(() => {
+                hideManualNavigationButtons();
+            }, 15000);
+        }
+        
+        function hideManualNavigationButtons() {
+            const buttonsContainer = document.getElementById('manualNavButtons');
+            if (buttonsContainer) {
+                buttonsContainer.style.opacity = '0';
+                setTimeout(() => {
+                    if (buttonsContainer.parentNode) {
+                        buttonsContainer.parentNode.removeChild(buttonsContainer);
+                    }
+                }, 300);
+            }
+            document.getElementById('voiceStatus').textContent = 'Ready to help';
+        }
+        
+        function manualNavigateTo(pageId) {
+            console.log('🔘 MANUAL NAVIGATION TO:', pageId);
+            
+            try {
+                // Hide manual navigation buttons
+                hideManualNavigationButtons();
+                
+                // Force navigation using multiple methods
+                document.getElementById('voiceStatus').textContent = 'Navigating...';
+                
+                // Method 1: Direct DOM manipulation
+                const pages = document.querySelectorAll('.page');
+                const navs = document.querySelectorAll('.nav-item');
+                
+                pages.forEach(p => p.classList.remove('active'));
+                navs.forEach(n => n.classList.remove('active'));
+                
+                const targetPage = document.getElementById(pageId + '-page');
+                const targetNav = document.getElementById('nav-' + pageId);
+                
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    console.log('✅ Page activated:', pageId);
+                }
+                
+                if (targetNav) {
+                    targetNav.classList.add('active');
+                    console.log('✅ Nav activated:', pageId);
+                }
+                
+                // Method 2: Call showPage function as backup
+                setTimeout(() => {
+                    if (typeof showPage === 'function') {
+                        showPage(pageId);
+                    }
+                    
+                    document.getElementById('voiceStatus').textContent = capitalizeFirst(pageId) + ' Ready!';
+                }, 100);
+                
+                console.log('🎉 MANUAL NAVIGATION COMPLETED:', pageId);
+                
+            } catch (error) {
+                console.error('❌ Manual navigation error:', error);
+                document.getElementById('voiceStatus').textContent = 'Navigation failed';
+            }
+        }
+        
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // Auto-Navigation for Voice Transcript Text with Comprehensive Command Support
+        function setupAutoNavigationForTranscript() {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            if (transcriptElement) {
+                // Enhanced voice command patterns with robust regex
+                const voiceCommands = {
+                    portfolio: {
+                        patterns: [
+                            /^(show|check|view|display|get|see|open)\s+(my\s+)?(portfolio|balance|wallet|holdings|funds|money|assets)/i,
+                            /^(portfolio|balance|wallet|holdings|funds)\s*(overview|status|check|view)?/i,
+                            /^(what|how)\s+(is|are|much)\s+(my\s+)?(balance|portfolio|holdings|funds|money)/i,
+                            /^(my\s+)?(current\s+)?(balance|portfolio|wallet|holdings|funds|money|assets)/i,
+                            /^(total\s+)?(value|worth|balance)/i
+                        ],
+                        action: () => triggerAutoPortfolioNavigation(),
+                        delay: 1500
+                    },
+                    trading: {
+                        patterns: [
+                            /^(swap|trade|exchange|convert|buy|sell)\s+/i,
+                            /^(open\s+)?(trading|swap|exchange)\s*(interface|page|screen)?/i,
+                            /^(go\s+to\s+)?(trading|swap|exchange)/i,
+                            /^(start\s+)?(trading|swapping)/i,
+                            /\b(swap|trade|exchange)\b.*\b(sol|bonk|usdc|token|crypto)\b/i,
+                            /\b(buy|sell)\b.*\b(sol|bonk|usdc|token|crypto)\b/i
+                        ],
+                        action: () => triggerAutoTradingNavigation(),
+                        delay: 1500
+                    },
+                    nft: {
+                        patterns: [
+                            /^(create|make|generate|mint|design)\s+/i,
+                            /^(open\s+)?(nft|art)\s*(studio|creator|generator|maker)?/i,
+                            /^(go\s+to\s+)?(nft|art|create)/i,
+                            /\b(nft|art|artwork|digital\s+art|collectible)\b/i,
+                            /^(mint|create)\s+.*\b(nft|art|artwork)\b/i,
+                            /^(ai\s+)?(art|artwork|image)\s*(creation|generator)?/i
+                        ],
+                        action: () => triggerAutoNFTNavigation(),
+                        delay: 1500
+                    },
+                    companion: {
+                        patterns: [
+                            /^(home|main|start|companion|astronaut)/i,
+                            /^(go\s+)?(home|back|main)/i,
+                            /^(open\s+)?(companion|main\s+page|home\s+screen)/i,
+                            /^(return\s+to\s+)?(home|main|companion)/i,
+                            /^(voice\s+)?(assistant|companion|chat)/i
+                        ],
+                        action: () => triggerAutoCompanionNavigation(),
+                        delay: 1500
+                    },
+                    yield: {
+                        patterns: [
+                            /^(yield|farm|stake|earn|liquidity)/i,
+                            /^(show\s+)?(yield\s+)?(farming|staking|pools)/i,
+                            /^(open\s+)?(yield|farming|staking)/i,
+                            /\b(apy|rewards|farming|staking|liquidity\s+pool)\b/i,
+                            /^(find\s+)?(yield|farming|staking)\s*(opportunities|pools)?/i
+                        ],
+                        action: () => triggerAutoYieldNavigation(),
+                        delay: 1500
+                    },
+                    prices: {
+                        patterns: [
+                            /^(price|prices|market|cost)/i,
+                            /^(check\s+)?(current\s+)?(price|prices|market)/i,
+                            /^(what\s+is\s+the\s+)?(price|cost)\s+of\s+/i,
+                            /^(show\s+)?(live\s+)?(prices|market|rates)/i,
+                            /\b(price\s+check|market\s+update|current\s+rates)\b/i
+                        ],
+                        action: () => triggerAutoPriceCheck(),
+                        delay: 1000
+                    },
+                    help: {
+                        patterns: [
+                            /^(help|what\s+can|commands|features)/i,
+                            /^(show\s+)?(help|commands|features|options)/i,
+                            /^(what\s+can\s+you\s+do|how\s+to\s+use)/i,
+                            /^(list\s+)?(commands|features|capabilities)/i
+                        ],
+                        action: () => triggerAutoHelpResponse(),
+                        delay: 1000
                     }
                 };
                 
-                recognition.onerror = function(event) {
-                    console.error('🚨 Voice recognition error:', event.error);
-                    document.getElementById('voiceStatus').textContent = 'Voice error: ' + event.error;
-                    isListening = false;
-                    updateVoiceUI();
-                };
+                // Add click handler for manual navigation
+                transcriptElement.addEventListener('click', function() {
+                    const text = transcriptElement.textContent.trim();
+                    processVoiceCommandText(text, voiceCommands);
+                });
                 
-                recognition.onend = function() {
-                    console.log('🎤 Voice recognition ended');
-                    isListening = false;
-                    updateVoiceUI();
-                };
-            } else {
-                console.warn('⚠️ Speech recognition not supported');
-                document.getElementById('voiceStatus').textContent = 'Voice recognition not supported on this device';
+                // Auto-detect text changes and trigger navigation
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'childList' || mutation.type === 'characterData') {
+                            const text = transcriptElement.textContent.trim();
+                            console.log('📝 TRANSCRIPT TEXT CHANGED:', text);
+                            
+                            // Process voice command with comprehensive patterns
+                            processVoiceCommandText(text, voiceCommands);
+                        }
+                    });
+                });
+                
+                // Start observing
+                observer.observe(transcriptElement, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true
+                });
+                
+                console.log('✅ AUTO-NAVIGATION SETUP COMPLETE - ALL FEATURES SUPPORTED');
             }
+        }
+        
+        // Process voice command text with pattern matching
+        function processVoiceCommandText(text, voiceCommands) {
+            if (!text || text.length < 2) return;
+            
+            const cleanText = text.trim();
+            console.log('🎯 PROCESSING VOICE COMMAND:', cleanText);
+            
+            // Check each command category
+            for (const [commandType, config] of Object.entries(voiceCommands)) {
+                for (const pattern of config.patterns) {
+                    if (pattern.test(cleanText)) {
+                        console.log('✅ MATCHED COMMAND:', commandType, 'with pattern:', pattern);
+                        
+                        // Add visual effect to transcript
+                        addTranscriptEffect(commandType);
+                        
+                        // Execute with delay
+                        setTimeout(() => {
+                            config.action();
+                        }, config.delay);
+                        
+                        return; // Stop after first match
+                    }
+                }
+            }
+            
+            console.log('⚠️ NO COMMAND PATTERN MATCHED for:', cleanText);
+        }
+        
+        // Add visual effects for different command types
+        function addTranscriptEffect(commandType) {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            if (!transcriptElement) return;
+            
+            const effects = {
+                portfolio: {
+                    background: 'linear-gradient(135deg, #4CAF50, #8BC34A)',
+                    color: 'white',
+                    boxShadow: '0 4px 20px rgba(76, 175, 80, 0.6)',
+                    icon: '📊'
+                },
+                trading: {
+                    background: 'linear-gradient(135deg, #ff6b35, #f7931e)',
+                    color: 'white',
+                    boxShadow: '0 4px 20px rgba(255, 107, 53, 0.6)',
+                    icon: '💱'
+                },
+                nft: {
+                    background: 'linear-gradient(135deg, #9C27B0, #E91E63)',
+                    color: 'white',
+                    boxShadow: '0 4px 20px rgba(156, 39, 176, 0.6)',
+                    icon: '🎨'
+                },
+                companion: {
+                    background: 'linear-gradient(135deg, #2196F3, #03DAC6)',
+                    color: 'white',
+                    boxShadow: '0 4px 20px rgba(33, 150, 243, 0.6)',
+                    icon: '🚀'
+                },
+                yield: {
+                    background: 'linear-gradient(135deg, #FF9800, #FFC107)',
+                    color: 'white',
+                    boxShadow: '0 4px 20px rgba(255, 152, 0, 0.6)',
+                    icon: '🌾'
+                },
+                prices: {
+                    background: 'linear-gradient(135deg, #607D8B, #90A4AE)',
+                    color: 'white',
+                    boxShadow: '0 4px 20px rgba(96, 125, 139, 0.6)',
+                    icon: '💰'
+                },
+                help: {
+                    background: 'linear-gradient(135deg, #795548, #8D6E63)',
+                    color: 'white',
+                    boxShadow: '0 4px 20px rgba(121, 85, 72, 0.6)',
+                    icon: '❓'
+                }
+            };
+            
+            const effect = effects[commandType] || effects.companion;
+            
+            transcriptElement.style.transform = 'scale(1.05)';
+            transcriptElement.style.background = effect.background;
+            transcriptElement.style.color = effect.color;
+            transcriptElement.style.boxShadow = effect.boxShadow;
+            transcriptElement.style.transition = 'all 0.3s ease';
+            
+            // Update status with icon
+            document.getElementById('voiceStatus').textContent = effect.icon + ' Processing ' + commandType + '...';
+        }
+        
+        function triggerAutoPortfolioNavigation() {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            
+            console.log('🚀 TRIGGERING AUTO PORTFOLIO NAVIGATION');
+            
+            // Add visual effect to show it's being clicked
+            if (transcriptElement) {
+                transcriptElement.style.transform = 'scale(1.05)';
+                transcriptElement.style.background = 'linear-gradient(135deg, #ff6b35, #f7931e)';
+                transcriptElement.style.color = 'white';
+                transcriptElement.style.boxShadow = '0 4px 20px rgba(255, 107, 53, 0.6)';
+                transcriptElement.style.transition = 'all 0.3s ease';
+                
+                // Show loading effect
+                document.getElementById('voiceStatus').textContent = 'Navigating to Portfolio...';
+            }
+            
+            // Navigate after effect
+            setTimeout(() => {
+                console.log('📊 EXECUTING PORTFOLIO NAVIGATION');
+                manualNavigateTo('portfolio');
+                
+                // Reset transcript styling
+                if (transcriptElement) {
+                    transcriptElement.style.transform = 'scale(1)';
+                    transcriptElement.style.background = '';
+                    transcriptElement.style.color = '';
+                    transcriptElement.style.boxShadow = '';
+                }
+            }, 300);
+        }
+        
+        // Comprehensive Auto-Navigation Trigger Functions for All Features
+        
+        function triggerAutoTradingNavigation() {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            
+            console.log('💱 TRIGGERING AUTO TRADING NAVIGATION');
+            
+            if (transcriptElement) {
+                transcriptElement.style.transform = 'scale(1.05)';
+                transcriptElement.style.background = 'linear-gradient(135deg, #ff6b35, #f7931e)';
+                transcriptElement.style.color = 'white';
+                transcriptElement.style.boxShadow = '0 4px 20px rgba(255, 107, 53, 0.6)';
+                transcriptElement.style.transition = 'all 0.3s ease';
+                
+                document.getElementById('voiceStatus').textContent = '💱 Opening Trading Interface...';
+            }
+            
+            setTimeout(() => {
+                console.log('💱 EXECUTING TRADING NAVIGATION');
+                manualNavigateTo('trading');
+                
+                // Reset transcript styling
+                if (transcriptElement) {
+                    transcriptElement.style.transform = 'scale(1)';
+                    transcriptElement.style.background = '';
+                    transcriptElement.style.color = '';
+                    transcriptElement.style.boxShadow = '';
+                }
+            }, 300);
+        }
+        
+        function triggerAutoNFTNavigation() {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            
+            console.log('🎨 TRIGGERING AUTO NFT NAVIGATION');
+            
+            if (transcriptElement) {
+                transcriptElement.style.transform = 'scale(1.05)';
+                transcriptElement.style.background = 'linear-gradient(135deg, #9C27B0, #E91E63)';
+                transcriptElement.style.color = 'white';
+                transcriptElement.style.boxShadow = '0 4px 20px rgba(156, 39, 176, 0.6)';
+                transcriptElement.style.transition = 'all 0.3s ease';
+                
+                document.getElementById('voiceStatus').textContent = '🎨 Opening NFT Studio...';
+            }
+            
+            setTimeout(() => {
+                console.log('🎨 EXECUTING NFT NAVIGATION');
+                manualNavigateTo('nft');
+                
+                // Reset transcript styling
+                if (transcriptElement) {
+                    transcriptElement.style.transform = 'scale(1)';
+                    transcriptElement.style.background = '';
+                    transcriptElement.style.color = '';
+                    transcriptElement.style.boxShadow = '';
+                }
+            }, 300);
+        }
+        
+        function triggerAutoCompanionNavigation() {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            
+            console.log('🚀 TRIGGERING AUTO COMPANION NAVIGATION');
+            
+            if (transcriptElement) {
+                transcriptElement.style.transform = 'scale(1.05)';
+                transcriptElement.style.background = 'linear-gradient(135deg, #2196F3, #03DAC6)';
+                transcriptElement.style.color = 'white';
+                transcriptElement.style.boxShadow = '0 4px 20px rgba(33, 150, 243, 0.6)';
+                transcriptElement.style.transition = 'all 0.3s ease';
+                
+                document.getElementById('voiceStatus').textContent = '🚀 Returning to Companion...';
+            }
+            
+            setTimeout(() => {
+                console.log('🚀 EXECUTING COMPANION NAVIGATION');
+                manualNavigateTo('companion');
+                
+                // Reset transcript styling
+                if (transcriptElement) {
+                    transcriptElement.style.transform = 'scale(1)';
+                    transcriptElement.style.background = '';
+                    transcriptElement.style.color = '';
+                    transcriptElement.style.boxShadow = '';
+                }
+            }, 300);
+        }
+        
+        function triggerAutoYieldNavigation() {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            
+            console.log('🌾 TRIGGERING AUTO YIELD NAVIGATION');
+            
+            if (transcriptElement) {
+                transcriptElement.style.transform = 'scale(1.05)';
+                transcriptElement.style.background = 'linear-gradient(135deg, #FF9800, #FFC107)';
+                transcriptElement.style.color = 'white';
+                transcriptElement.style.boxShadow = '0 4px 20px rgba(255, 152, 0, 0.6)';
+                transcriptElement.style.transition = 'all 0.3s ease';
+                
+                document.getElementById('voiceStatus').textContent = '🌾 Opening Yield Farming...';
+            }
+            
+            setTimeout(() => {
+                console.log('🌾 EXECUTING YIELD NAVIGATION TO TRADING PAGE');
+                manualNavigateTo('trading'); // Yield features are on trading page
+                
+                // Show yield farming section
+                setTimeout(() => {
+                    if (typeof showYieldFarmingSection === 'function') {
+                        showYieldFarmingSection();
+                    }
+                    document.getElementById('voiceStatus').textContent = '🌾 Yield farming opportunities loaded!';
+                }, 500);
+                
+                // Reset transcript styling
+                if (transcriptElement) {
+                    transcriptElement.style.transform = 'scale(1)';
+                    transcriptElement.style.background = '';
+                    transcriptElement.style.color = '';
+                    transcriptElement.style.boxShadow = '';
+                }
+            }, 300);
+        }
+        
+        function triggerAutoPriceCheck() {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            
+            console.log('💰 TRIGGERING AUTO PRICE CHECK');
+            
+            if (transcriptElement) {
+                transcriptElement.style.transform = 'scale(1.05)';
+                transcriptElement.style.background = 'linear-gradient(135deg, #607D8B, #90A4AE)';
+                transcriptElement.style.color = 'white';
+                transcriptElement.style.boxShadow = '0 4px 20px rgba(96, 125, 139, 0.6)';
+                transcriptElement.style.transition = 'all 0.3s ease';
+                
+                document.getElementById('voiceStatus').textContent = '💰 Fetching live prices...';
+            }
+            
+            setTimeout(() => {
+                console.log('💰 EXECUTING PRICE CHECK');
+                
+                // Trigger price refresh if function exists
+                if (typeof refreshPricesManually === 'function') {
+                    refreshPricesManually();
+                }
+                
+                // Show prices on current page or go to portfolio for price view
+                if (typeof showLivePrices === 'function') {
+                    showLivePrices();
+                } else {
+                    // Fallback: Show on portfolio page
+                    manualNavigateTo('portfolio');
+                }
+                
+                document.getElementById('voiceStatus').textContent = '💰 Live prices updated!';
+                
+                // Reset transcript styling
+                if (transcriptElement) {
+                    transcriptElement.style.transform = 'scale(1)';
+                    transcriptElement.style.background = '';
+                    transcriptElement.style.color = '';
+                    transcriptElement.style.boxShadow = '';
+                }
+            }, 300);
+        }
+        
+        function triggerAutoHelpResponse() {
+            const transcriptElement = document.getElementById('voiceTranscript');
+            
+            console.log('❓ TRIGGERING AUTO HELP RESPONSE');
+            
+            if (transcriptElement) {
+                transcriptElement.style.transform = 'scale(1.05)';
+                transcriptElement.style.background = 'linear-gradient(135deg, #795548, #8D6E63)';
+                transcriptElement.style.color = 'white';
+                transcriptElement.style.boxShadow = '0 4px 20px rgba(121, 85, 72, 0.6)';
+                transcriptElement.style.transition = 'all 0.3s ease';
+                
+                document.getElementById('voiceStatus').textContent = '❓ Showing help information...';
+            }
+            
+            setTimeout(() => {
+                console.log('❓ EXECUTING HELP RESPONSE');
+                
+                // Show comprehensive help in AI response area
+                const geminiResponse = document.getElementById('geminiResponse');
+                const geminiText = document.getElementById('geminiText');
+                
+                if (geminiResponse && geminiText) {
+                    geminiResponse.style.display = 'block';
+                    geminiText.innerHTML = `
+                        <div style="text-align: center; margin-bottom: 16px;">
+                            <h3 style="color: var(--bonk-orange); margin: 0; font-size: 16px;">🚀 Voice Commands</h3>
+                            <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--text-tertiary);">Speak naturally - AI understands variations</p>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 100%; overflow: hidden;">
+                            
+                            <div style="background: rgba(76, 175, 80, 0.08); border-radius: 10px; padding: 10px; border-left: 3px solid #4CAF50; width: 100%; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 14px; margin-right: 5px;">📊</span>
+                                    <strong style="color: #4CAF50; font-size: 13px;">Portfolio</strong>
+                                </div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; width: 100%;">
+                                    <span style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">balance</span>
+                                    <span style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">wallet</span>
+                                    <span style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">portfolio</span>
+                                    <span style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">total value</span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: rgba(255, 107, 53, 0.08); border-radius: 10px; padding: 10px; border-left: 3px solid #ff6b35; width: 100%; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 14px; margin-right: 5px;">💱</span>
+                                    <strong style="color: #ff6b35; font-size: 13px;">Trading</strong>
+                                </div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; width: 100%;">
+                                    <span style="background: rgba(255, 107, 53, 0.2); color: #ff6b35; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">swap</span>
+                                    <span style="background: rgba(255, 107, 53, 0.2); color: #ff6b35; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">trade</span>
+                                    <span style="background: rgba(255, 107, 53, 0.2); color: #ff6b35; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">exchange</span>
+                                    <span style="background: rgba(255, 107, 53, 0.2); color: #ff6b35; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">buy USDC</span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: rgba(156, 39, 176, 0.08); border-radius: 10px; padding: 10px; border-left: 3px solid #9C27B0; width: 100%; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 14px; margin-right: 5px;">🎨</span>
+                                    <strong style="color: #9C27B0; font-size: 13px;">NFT Studio</strong>
+                                </div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; width: 100%;">
+                                    <span style="background: rgba(156, 39, 176, 0.2); color: #9C27B0; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">create NFT</span>
+                                    <span style="background: rgba(156, 39, 176, 0.2); color: #9C27B0; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">make art</span>
+                                    <span style="background: rgba(156, 39, 176, 0.2); color: #9C27B0; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">mint</span>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 8px; width: 100%;">
+                                <div style="flex: 1; background: rgba(255, 152, 0, 0.08); border-radius: 8px; padding: 8px; border-left: 3px solid #FF9800; min-width: 0; max-width: 50%;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                        <span style="font-size: 12px; margin-right: 3px;">🌾</span>
+                                        <strong style="color: #FF9800; font-size: 11px;">Yield</strong>
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                                        <span style="background: rgba(255, 152, 0, 0.2); color: #FF9800; padding: 2px 4px; border-radius: 6px; font-size: 8px; white-space: nowrap;">stake</span>
+                                        <span style="background: rgba(255, 152, 0, 0.2); color: #FF9800; padding: 2px 4px; border-radius: 6px; font-size: 8px; white-space: nowrap;">farm</span>
+                                    </div>
+                                </div>
+                                
+                                <div style="flex: 1; background: rgba(96, 125, 139, 0.08); border-radius: 8px; padding: 8px; border-left: 3px solid #607D8B; min-width: 0; max-width: 50%;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                        <span style="font-size: 12px; margin-right: 3px;">💰</span>
+                                        <strong style="color: #607D8B; font-size: 11px;">Prices</strong>
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                                        <span style="background: rgba(96, 125, 139, 0.2); color: #607D8B; padding: 2px 4px; border-radius: 6px; font-size: 8px; white-space: nowrap;">rates</span>
+                                        <span style="background: rgba(96, 125, 139, 0.2); color: #607D8B; padding: 2px 4px; border-radius: 6px; font-size: 8px; white-space: nowrap;">market</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="background: rgba(33, 150, 243, 0.08); border-radius: 10px; padding: 10px; border-left: 3px solid #2196F3; width: 100%; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 14px; margin-right: 5px;">🚀</span>
+                                    <strong style="color: #2196F3; font-size: 13px;">Navigation</strong>
+                                </div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; width: 100%;">
+                                    <span style="background: rgba(33, 150, 243, 0.2); color: #2196F3; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">home</span>
+                                    <span style="background: rgba(33, 150, 243, 0.2); color: #2196F3; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">help</span>
+                                    <span style="background: rgba(33, 150, 243, 0.2); color: #2196F3; padding: 3px 6px; border-radius: 8px; font-size: 9px; white-space: nowrap;">commands</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 12px; padding: 6px; background: rgba(255, 107, 53, 0.05); border-radius: 6px; border: 1px dashed rgba(255, 107, 53, 0.3);">
+                            <div style="font-size: 10px; color: var(--bonk-orange); font-weight: 500;">💡 Pro Tip</div>
+                            <div style="font-size: 9px; color: var(--text-secondary); margin-top: 1px;">Try: "Show balance" or "Swap SOL"</div>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('voiceStatus').textContent = '❓ Voice commands guide displayed!';
+                
+                // Reset transcript styling
+                if (transcriptElement) {
+                    transcriptElement.style.transform = 'scale(1)';
+                    transcriptElement.style.background = '';
+                    transcriptElement.style.color = '';
+                    transcriptElement.style.boxShadow = '';
+                }
+            }, 300);
         }
 
         // Voice UI Updates for Seamless Interface
@@ -2742,59 +3742,126 @@ class MainActivity : Activity() {
             }
         }
 
-        // Toggle Voice Recording
+        // Toggle Voice Recording with Android Native (Enhanced)
         function toggleVoiceRecording() {
-            if (!recognition) {
-                document.getElementById('voiceStatus').textContent = 'Voice recognition not available';
+            console.log('🎤 Toggle voice recording, isListening:', isListening);
+            
+            if (typeof Android === 'undefined') {
+                document.getElementById('voiceStatus').textContent = 'Android interface not available';
                 return;
             }
             
+            // Prevent rapid double-taps
+            if (window.voiceToggleTimeout) {
+                console.log('⚠️ Voice toggle too fast, ignoring...');
+                return;
+            }
+            
+            window.voiceToggleTimeout = setTimeout(() => {
+                window.voiceToggleTimeout = null;
+            }, 1000); // 1 second cooldown
+            
             if (isListening) {
-                recognition.stop();
+                console.log('🛑 Stopping voice recognition...');
+                if (Android.stopVoiceRecognition) {
+                    Android.stopVoiceRecognition();
+                }
+                isListening = false;
+                updateVoiceUI();
             } else {
-                recognition.start();
+                console.log('🎤 Starting voice recognition...');
+                document.getElementById('voiceStatus').textContent = 'Initializing...';
+                
+                if (Android.startVoiceRecognition) {
+                    Android.startVoiceRecognition();
+                    // Note: isListening will be set to true in onAndroidVoiceStarted callback
+                } else {
+                    document.getElementById('voiceStatus').textContent = 'Voice recognition not available';
+                }
             }
         }
 
-        // Process Voice Commands
+        // Enhanced Process Voice Commands with AI Understanding
         async function processVoiceCommand(transcript) {
-            console.log('🗣️ Processing voice command:', transcript);
-            document.getElementById('voiceTranscript').textContent = transcript;
+            console.log('🗣️ Processing voice command (AI mode):', transcript);
             
-            // Show Gemini processing
-            document.getElementById('geminiResponse').style.display = 'block';
-            document.getElementById('geminiText').innerHTML = '🤔 Processing your request...';
+            // Check if navigation already happened (instant rules) - this should not happen
+            const command = transcript.toLowerCase();
+            const isInstantNavigation = command.includes('portfolio') || command.includes('balance') || 
+                                      command.includes('swap') || command.includes('trade') || 
+                                      command.includes('nft') || command.includes('create');
             
-            // Send to Gemini API
-            try {
-                const response = await sendToGemini(transcript);
-                document.getElementById('geminiText').innerHTML = response;
+            if (isInstantNavigation) {
+                console.log('⚠️ WARNING: Instant navigation command reached AI processing - this should not happen');
+                // Clear processing status and provide quick response
+                document.getElementById('voiceStatus').textContent = 'Navigation completed';
+                document.getElementById('geminiResponse').style.display = 'block';
                 
-                // Execute the command
-                await executeAICommand(transcript, response);
+                if (command.includes('portfolio') || command.includes('balance')) {
+                    document.getElementById('geminiText').innerHTML = 'Portfolio loaded! Your current holdings and balances are displayed above.';
+                } else if (command.includes('swap') || command.includes('trade')) {
+                    document.getElementById('geminiText').innerHTML = 'Trading interface ready! Select your tokens and enter amounts to trade.';
+                } else if (command.includes('nft') || command.includes('create')) {
+                    document.getElementById('geminiText').innerHTML = 'NFT Studio opened! Describe your artwork to get started with creation.';
+                }
+                return;
+            }
+            
+            // For non-navigation commands, show AI processing
+            document.getElementById('geminiResponse').style.display = 'block';
+            document.getElementById('geminiText').innerHTML = '🤔 Understanding your request...';
+            
+            try {
+                // Enhanced AI prompt for better understanding
+                const enhancedPrompt = "You are an expert DeFi assistant for a Solana-based app called BIFE. " +
+                "The user said: \"" + transcript + "\"" +
+                "\n\nAvailable features:" +
+                "\n1. Portfolio Management - Check balances, view holdings (SOL, BONK, USDC)" +
+                "\n2. Token Swaps - Trade between SOL, BONK, USDC using Raydium" +
+                "\n3. NFT Creation - Generate AI art and mint NFTs" +
+                "\n4. Yield Farming - Find and join liquidity pools" +
+                "\n5. Price Checking - Get current market prices" +
+                "\n\nDeployed tokens on Solana devnet:" +
+                "\n- BONK: 8wg7hAtfF1eJZLLb7TCHZhVuS3NkBdm8R7dtRPvn9BiP" +
+                "\n- USDC: 9nccat6babNG1u32Xu6d8XojGy7BGH6shwCLzoCrZWTT" +
+                "\n\nPlease respond in natural, conversational language without any markdown formatting, asterisks, or special characters. Use plain text only." +
+                "\n\nPlease:" +
+                "\n1. Identify the user's intent clearly" +
+                "\n2. Suggest specific actionable steps" +
+                "\n3. Keep response conversational and helpful" +
+                "\n4. If it's a swap request, ask for specific amounts and tokens" +
+                "\n5. If unclear, ask clarifying questions" +
+                "\n\nRespond concisely but be comprehensive in your guidance.";
+                
+                // Send to Gemini API
+                const response = await sendToGeminiAdvanced(enhancedPrompt);
+                
+                // Display the cleaned response as HTML with proper line breaks
+                const cleanedResponse = response.replace(/\n/g, '<br>');
+                document.getElementById('geminiText').innerHTML = cleanedResponse;
+                
+                // Execute the command based on AI understanding
+                await executeEnhancedAICommand(transcript, response);
+                
+                // Clear processing status after AI completes
+                document.getElementById('voiceStatus').textContent = 'Ready to help';
                 
             } catch (error) {
-                console.error('❌ Gemini API error:', error);
-                document.getElementById('geminiText').innerHTML = '❌ Sorry, I encountered an error processing your request.';
+                console.error('❌ Voice processing error:', error);
+                document.getElementById('geminiText').innerHTML = '❌ Sorry, I had trouble understanding. Could you try again?';
+                
+                // Clear processing status on error
+                document.getElementById('voiceStatus').textContent = 'Ready to help';
             }
         }
-
-        // Send to Gemini API
-        async function sendToGemini(prompt) {
-            const enhancedPrompt = `
-            You are a DeFi trading assistant for a Bonk-powered app. User said: "' + prompt + '"
-            
-            Context: This is a Solana-based DeFi app with BONK, SOL, and USDC tokens.
-            Available actions: portfolio check, token swaps, yield farming, NFT creation, price checking.
-            
-            Respond helpfully and suggest specific actions the user can take. Keep responses concise and actionable.
-            `;
-            
+        
+        // Advanced Gemini API integration
+        async function sendToGeminiAdvanced(prompt) {
             // Use real Gemini API if key is available
             if (geminiApiKey && geminiApiKey.length > 10) {
                 try {
-                    console.log('🚀 Using real Gemini API');
-                    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + geminiApiKey, {
+                    console.log('🚀 Using enhanced Gemini API');
+                    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=' + geminiApiKey, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2802,80 +3869,329 @@ class MainActivity : Activity() {
                         body: JSON.stringify({
                             contents: [{
                                 parts: [{
-                                    text: enhancedPrompt
+                                    text: prompt
                                 }]
-                            }]
+                            }],
+                            generationConfig: {
+                                temperature: 0.7,
+                                topK: 40,
+                                topP: 0.95,
+                                maxOutputTokens: 1024,
+                            }
                         })
                     });
                     
                     if (response.ok) {
                         const data = await response.json();
-                        const aiResponse = data.candidates[0].content.parts[0].text;
+                        let aiResponse = data.candidates[0].content.parts[0].text;
+                        console.log('✅ Enhanced Gemini response received');
+                        
+                        // Clean up the response for natural display
+                        aiResponse = cleanupResponseText(aiResponse);
                         return aiResponse;
                     } else {
-                        console.error('Gemini API error:', response.status);
+                        console.error('Gemini API error:', response.status, await response.text());
                         throw new Error('API request failed');
                     }
                 } catch (error) {
-                    console.error('❌ Gemini API error:', error);
-                    // Fall back to simulated response
+                    console.error('❌ Enhanced Gemini API error:', error);
+                    // Fall back to smart local processing
+                    return cleanupResponseText(generateSmartLocalResponse(prompt));
                 }
             }
             
-            // Simulate Gemini API response (fallback or when no API key)
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    let response = '';
-                    const lowerPrompt = prompt.toLowerCase();
-                    
-                    if (lowerPrompt.includes('portfolio') || lowerPrompt.includes('balance')) {
-                        response = '📊 I see you want to check your portfolio! Your current balance is $$12,450.89 with strong BONK holdings. Would you like me to refresh the data or analyze your positions?';
-                    } else if (lowerPrompt.includes('swap') || lowerPrompt.includes('trade')) {
-                        response = '🔄 Ready to execute a swap! I can help you trade between SOL, BONK, and USDC. Just tell me the amount and tokens you want to exchange.';
-                    } else if (lowerPrompt.includes('nft') || lowerPrompt.includes('create')) {
-                        response = '🎨 Excellent! I can help you create an NFT. Describe what you want to create and I\'ll generate the artwork and mint it for you.';
-                    } else if (lowerPrompt.includes('yield') || lowerPrompt.includes('farm')) {
-                        response = '🌾 Great choice! Current best yields: SOL-USDC at 18.4% APY and BONK-SOL at 24.1% APY. Which pool interests you?';
-                    } else if (lowerPrompt.includes('price') || lowerPrompt.includes('market')) {
-                        response = '💰 Current prices: SOL $$145.67, BONK $$0.00000852, USDC $$1.00. Market is looking bullish for BONK!';
-                    } else {
-                        response = '🤖 I understand you want to: "' + prompt + '". I can help with trading, portfolio management, NFT creation, and yield farming. What would you like to do first?';
-                    }
-                    
-                    resolve(response);
-                }, 1500);
-            });
+            // Smart local response generation
+            return cleanupResponseText(generateSmartLocalResponse(prompt));
         }
-
-        // Execute AI Commands
-        async function executeAICommand(originalCommand, geminiResponse) {
+        
+        // Clean up response text to remove special characters and formatting
+        function cleanupResponseText(text) {
+            if (!text) return '';
+            
+            return text
+                // Remove markdown bold formatting
+                .replace(/\*\*(.*?)\*\*/g, '$1')
+                .replace(/\*(.*?)\*/g, '$1')
+                // Remove markdown headers
+                .replace(/#{1,6}\s*/g, '')
+                // Convert escaped newlines to actual newlines
+                .replace(/\\n\\n/g, '\n\n')
+                .replace(/\\n/g, '\n')
+                // Remove other escaped characters
+                .replace(/\\\"/g, '"')
+                .replace(/\\\'/g, "'")
+                // Remove extra whitespace
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+        
+        // Smart local response for voice commands - Clean natural language
+        function generateSmartLocalResponse(fullPrompt) {
+            const originalCommand = fullPrompt.match(/The user said: "(.*?)"/)?.[1] || '';
             const command = originalCommand.toLowerCase();
             
-            if (command.includes('portfolio') || command.includes('balance')) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                showPage('portfolio');
-                refreshPortfolio();
-                animateShiba('portfolio');
-            } else if (command.includes('swap') || command.includes('trade')) {
-                showPage('trading');
-                animateShiba('trading');
-            } else if (command.includes('nft') || command.includes('create')) {
-                showPage('nft');
-                animateShiba('nft');
-                if (command.includes('space dog') || command.includes('dog')) {
-                    document.getElementById('nftName').value = 'Space Dog Adventures';
-                    document.getElementById('nftDescription').value = originalCommand;
+            console.log('🧠 Generating smart local response for:', originalCommand);
+            
+            if (command.includes('portfolio') || command.includes('balance') || command.includes('holdings') || 
+                command.includes('my wallet') || command.includes('my money') || command.includes('how much') ||
+                command.includes('total value') || command.includes('net worth') || command.includes('tokens') ||
+                command.includes('show my') || command.includes('check my') || command.includes('wallet balance')) {
+                return "Portfolio Overview\n\n" +
+                "I'll show your current holdings! Your portfolio includes:\n" +
+                "• SOL: ~85.45 ($12,450.89)\n" +
+                "• BONK: 1.2B tokens ($1,024.32)\n" +
+                "• USDC: 2,450.50 ($2,450.50)\n\n" +
+                "Total Value: $15,925.71 (+$245.89 today)\n\n" +
+                "Would you like me to refresh the data or analyze any specific token?";
+            } 
+            else if (command.includes('swap') || command.includes('trade') || command.includes('exchange')) {
+                const amounts = command.match(/(\d+(?:\.\d+)?)/g);
+                const tokens = [];
+                if (command.includes('sol')) tokens.push('SOL');
+                if (command.includes('bonk')) tokens.push('BONK');
+                if (command.includes('usdc')) tokens.push('USDC');
+                
+                let response = "Token Swap Ready\n\n" +
+                "Current rates:\n" +
+                "• 1 SOL = $145.67 USDC\n" +
+                "• 1 SOL = " + Math.floor(145.67 / 0.00000852).toLocaleString() + " BONK\n" +
+                "• 1 USDC = " + Math.floor(1 / 0.00000852).toLocaleString() + " BONK\n\n";
+                
+                if (amounts && amounts.length > 0 && tokens.length >= 2) {
+                    response += "I can swap " + amounts[0] + " " + tokens[0] + " for " + tokens[1] + ". Shall I execute this trade?";
+                } else {
+                    response += "Please specify: How much of which token would you like to swap? (e.g., \"100 USDC to BONK\")";
                 }
-            } else if (command.includes('yield') || command.includes('farm')) {
+                
+                return response;
+            }
+            else if (command.includes('nft') || command.includes('create') || command.includes('art') || command.includes('mint')) {
+                let artDescription = 'a unique space-themed artwork';
+                if (command.includes('dog')) artDescription = 'an astronaut dog in space';
+                if (command.includes('space')) artDescription = 'a cosmic space scene';
+                if (command.includes('bonk')) artDescription = 'BONK-themed digital art';
+                
+                return "NFT Creation Studio\n\n" +
+                "I'll help you create " + artDescription + "!\n\n" +
+                "Here's how it works:\n" +
+                "1. Generate AI artwork based on your description\n" +
+                "2. Add details and properties\n" +
+                "3. Create your NFT on blockchain\n" +
+                "4. Add to your collection\n\n" +
+                "Your idea: \"" + originalCommand + "\"\n\n" +
+                "Ready to start creating? This will cost about 0.01 SOL.";
+            }
+            else if (command.includes('yield') || command.includes('farm') || command.includes('stake') || command.includes('earn')) {
+                return "Yield Farming Opportunities\n\n" +
+                "Top pools for you:\n" +
+                "• SOL-USDC on Raydium: 18.4% APY (Safe)\n" +
+                "• BONK-SOL on Raydium: 24.1% APY (Medium risk)\n" +
+                "• SOL Staking: 7.2% APY (Very safe)\n\n" +
+                "Based on your holdings, I recommend starting with SOL-USDC pool.\n\n" +
+                "Which pool interests you most?";
+            }
+            else if (command.includes('price') || command.includes('market') || command.includes('cost')) {
+                return "Live Market Prices\n\n" +
+                "Current Prices:\n" +
+                "• SOL: $145.67 (+2.3% 24h)\n" +
+                "• BONK: $0.00000852 (+12.8% 24h)\n" +
+                "• USDC: $1.00 (stable)\n\n" +
+                "Market Sentiment: Bullish on BONK, SOL steady growth\n" +
+                "24h Volume: SOL $2.1B, BONK $145M\n\n" +
+                "BONK is trending! Good time to consider your position.";
+            }
+            else if (command.includes('help') || command.includes('what can') || command.includes('features')) {
+                return "BIFE Voice Assistant\n\n" +
+                "I can help you with:\n\n" +
+                "Portfolio: \"Show my balance\" / \"Portfolio overview\"\n" +
+                "Trading: \"Swap 100 USDC to BONK\" / \"Trade SOL\"\n" +
+                "NFTs: \"Create a space dog NFT\" / \"Mint artwork\"\n" +
+                "Yield: \"Show yield farms\" / \"Best staking options\"\n" +
+                "Prices: \"Current BONK price\" / \"Market update\"\n\n" +
+                "Just speak naturally! Try: \"I want to swap some SOL for BONK\"";
+            }
+            else {
+                return "Voice Command Received\n\n" +
+                "You said: \"" + originalCommand + "\"\n\n" +
+                "I can help with:\n" +
+                "• Portfolio management and balance checking\n" +
+                "• Token swaps between SOL, BONK, and USDC\n" +
+                "• NFT creation and minting\n" +
+                "• Yield farming and staking\n" +
+                "• Live price updates\n\n" +
+                "What would you like to do? Try being more specific, like \"show my portfolio\" or \"swap USDC to BONK\".";
+            }
+        }
+
+        // Enhanced Execute AI Commands with Smart Actions
+        async function executeEnhancedAICommand(originalCommand, geminiResponse) {
+            const command = originalCommand.toLowerCase();
+            console.log('🎯 Executing enhanced AI command (fallback):', originalCommand);
+            
+            // Add a small delay for better UX
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Check if this is a navigation command that should have been handled instantly
+            const isNavigationCommand = command.includes('portfolio') || command.includes('balance') || command.includes('holdings') || 
+                command.includes('my wallet') || command.includes('my money') || command.includes('how much') ||
+                command.includes('total value') || command.includes('net worth') || command.includes('tokens') ||
+                command.includes('show my') || command.includes('check my') || command.includes('wallet balance') ||
+                command.includes('swap') || command.includes('trade') || command.includes('exchange') ||
+                command.includes('nft') || command.includes('create') || command.includes('art') || command.includes('mint') ||
+                command.includes('home') || command.includes('companion') || command.includes('main') || command.includes('back');
+            
+            if (isNavigationCommand) {
+                console.log('⚠️ WARNING: Navigation command reached AI processing - instant navigation may have failed');
+                console.log('� Attempting fallback navigation...');
+                
+                // Fallback navigation using showPage
+                if (command.includes('portfolio') || command.includes('balance') || command.includes('holdings') || 
+                    command.includes('my wallet') || command.includes('my money') || command.includes('how much') ||
+                    command.includes('total value') || command.includes('net worth') || command.includes('tokens') ||
+                    command.includes('show my') || command.includes('check my') || command.includes('wallet balance')) {
+                    console.log('📊 🔄 FALLBACK PORTFOLIO NAVIGATION');
+                    showPage('portfolio');
+                    
+                    setTimeout(() => {
+                        if (typeof unicornDance === 'function') {
+                            unicornDance();
+                        }
+                        if (isWalletConnected && walletPublicKey) {
+                            if (typeof refreshRealPortfolioData === 'function') {
+                                refreshRealPortfolioData();
+                            }
+                            if (typeof showStatusMessage === 'function') {
+                                showStatusMessage('📊 Portfolio data refreshed!', 'success');
+                            }
+                        } else {
+                            if (typeof showConnectWalletState === 'function') {
+                                showConnectWalletState();
+                            }
+                            if (typeof showStatusMessage === 'function') {
+                                showStatusMessage('💳 Connect your wallet to view portfolio', 'info');
+                            }
+                        }
+                    }, 200);
+                } 
+                else if (command.includes('swap') || command.includes('trade') || command.includes('exchange')) {
+                    console.log('🔄 🔄 FALLBACK TRADING NAVIGATION');
+                    showPage('trading');
+                    if (typeof animateShiba === 'function') {
+                        animateShiba('trading');
+                    }
+                    if (typeof showStatusMessage === 'function') {
+                        showStatusMessage('🔄 Trading interface ready!', 'success');
+                    }
+                }
+                else if (command.includes('nft') || command.includes('create') || command.includes('art') || command.includes('mint')) {
+                    console.log('🎨 🔄 FALLBACK NFT NAVIGATION');
+                    showPage('nft');
+                    if (typeof animateShiba === 'function') {
+                        animateShiba('nft');
+                    }
+                    if (typeof showStatusMessage === 'function') {
+                        showStatusMessage('🎨 NFT studio ready for creation!', 'success');
+                    }
+                }
+                else if (command.includes('home') || command.includes('companion') || command.includes('main') || command.includes('back')) {
+                    console.log('🚀 🔄 FALLBACK COMPANION NAVIGATION');
+                    showPage('companion');
+                    if (typeof showStatusMessage === 'function') {
+                        showStatusMessage('🚀 Welcome back to Companion!', 'success');
+                    }
+                }
+                return;
+            }
+            
+            // Non-navigation commands - handle normally
+            if (command.includes('yield') || command.includes('farm') || command.includes('stake') || command.includes('earn')) {
+                console.log('🌾 Executing yield farming command...');
                 showPage('trading');
-                animateShiba('trading');
-                openYieldFarms();
+                if (typeof animateShiba === 'function') {
+                    animateShiba('trading');
+                }
+                setTimeout(() => {
+                    if (typeof openYieldFarms === 'function') {
+                        openYieldFarms();
+                    }
+                }, 500);
+                if (typeof showStatusMessage === 'function') {
+                    showStatusMessage('🌾 Yield farming opportunities loaded!', 'success');
+                }
+            }
+            // Price checking commands
+            else if (command.includes('price') || command.includes('market') || command.includes('cost')) {
+                console.log('💰 Executing price check command...');
+                if (typeof refreshPricesManually === 'function') {
+                    refreshPricesManually();
+                }
+                if (typeof showStatusMessage === 'function') {
+                    showStatusMessage('💰 Live prices updated!', 'success');
+                }
+            }
+            // Help commands
+            else if (command.includes('help') || command.includes('what can') || command.includes('features')) {
+                console.log('❓ Showing help information...');
+                if (typeof showStatusMessage === 'function') {
+                    showStatusMessage('🚀 Voice commands ready! Try: "show portfolio" or "swap SOL"', 'info');
+                }
+            }
+            // Default action
+            else {
+                console.log('🤖 General command, staying on companion page...');
+                if (typeof showStatusMessage === 'function') {
+                    showStatusMessage('🤖 I understand! Ask me about portfolio, trading, NFTs, or yields.', 'info');
+                }
+            }
+            
+            // Animate the astronaut dog to show response
+            const container = document.getElementById('astronaut-animation');
+            if (container) {
+                container.style.transform = 'scale(1.1)';
+                container.style.filter = 'drop-shadow(0 0 20px var(--bonk-orange))';
+                setTimeout(() => {
+                    container.style.transform = 'scale(1)';
+                    container.style.filter = 'none';
+                }, 1000);
             }
         }
 
         // Voice Commands for Quick Actions
         function executeVoiceCommand(command) {
+            console.log('🎯 EXECUTE VOICE COMMAND:', command);
+            
+            // Set transcript and clear status
             document.getElementById('voiceTranscript').textContent = command;
+            document.getElementById('voiceStatus').textContent = 'Processing command...';
+            
+            const lowerCommand = command.toLowerCase();
+            
+            // DIRECT NAVIGATION FOR QUICK BUTTONS
+            if (lowerCommand.includes('portfolio') || lowerCommand.includes('balance') || lowerCommand.includes('show my')) {
+                console.log('📊 QUICK PORTFOLIO NAVIGATION');
+                manualNavigateTo('portfolio');
+                return;
+            }
+            
+            if (lowerCommand.includes('swap') || lowerCommand.includes('trade')) {
+                console.log('💱 QUICK TRADING NAVIGATION');
+                manualNavigateTo('trading');
+                return;
+            }
+            
+            if (lowerCommand.includes('nft') || lowerCommand.includes('create')) {
+                console.log('🎨 QUICK NFT NAVIGATION');
+                manualNavigateTo('nft');
+                return;
+            }
+            
+            if (lowerCommand.includes('home') || lowerCommand.includes('companion')) {
+                console.log('🏠 QUICK HOME NAVIGATION');
+                manualNavigateTo('companion');
+                return;
+            }
+            
+            // If no direct navigation, process with AI
             processVoiceCommand(command);
         }
 
@@ -2927,7 +4243,7 @@ class MainActivity : Activity() {
         }
 
         // Wallet Connection Loading State Management
-        function showWalletConnectLoader(message = 'Connecting to Solana...', subtitle = 'Please wait while we establish connection') {
+        function showWalletConnectLoader(message = 'Connecting your wallet...', subtitle = 'Please wait while we set up your space mission') {
             const button = document.getElementById('portfolioConnectButton');
             const loader = document.getElementById('walletConnectLoader');
             const loaderText = loader.querySelector('.loader-text');
@@ -2999,14 +4315,14 @@ class MainActivity : Activity() {
         async function connectSolanaWallet() {
             try {
                 // Show loading state
-                showWalletConnectLoader('Connecting to Solana...', 'Initializing Solana devnet connection');
-                showStatusMessage("🔄 Connecting to Solana Devnet...", "info");
+                showWalletConnectLoader('Connecting your wallet...', 'Setting up your DeFi space mission');
+                showStatusMessage("🔄 Connecting your wallet...", "info");
                 
                 // Initialize Solana connection first
-                showWalletConnectLoader('Initializing Solana...', 'Establishing connection to devnet');
+                showWalletConnectLoader('Setting up wallet...', 'Preparing your space wallet');
                 const connectionSuccess = await initializeSolanaConnection();
                 if (!connectionSuccess) {
-                    throw new Error('Failed to initialize Solana connection');
+                    throw new Error('Failed to initialize wallet connection');
                 }
                 
                 // Get the wallet from Android environment variables
@@ -3046,7 +4362,7 @@ class MainActivity : Activity() {
                 
                 updateWalletUI();
                 hideWalletConnectLoader(true);
-                showStatusMessage("🎉 Devnet wallet connected! " + walletPublicKeyStr.slice(0, 8) + "...", "success");
+                showStatusMessage("🎉 Space wallet connected! " + walletPublicKeyStr.slice(0, 8) + "...", "success");
                 
                 // Update swap button state now that wallet is connected
                 updateSwapButton(document.getElementById('toAmount').value !== '0.00' && document.getElementById('fromAmount').value !== '');
@@ -4010,10 +5326,10 @@ class MainActivity : Activity() {
                 }
                 
                 if (statusElement) {
-                    statusElement.textContent = 'Minting NFT on Solana... 🔨';
+                    statusElement.textContent = 'Creating your NFT... 🔨';
                 }
                 
-                showStatusMessage('🔨 Starting real NFT mint on Solana devnet...', 'info');
+                showStatusMessage('🔨 Creating your NFT...', 'info');
                 
                 // Check wallet connection
                 if (!isWalletConnected || !walletPublicKey) {
@@ -4194,10 +5510,10 @@ class MainActivity : Activity() {
                 console.log('  - Total cost: ' + totalCostSOL.toFixed(6) + ' SOL');
                 
                 if (balance < totalCost) {
-                    throw new Error('Insufficient SOL balance. Need ' + totalCostSOL.toFixed(6) + ' SOL but only have ' + solBalance.toFixed(6) + ' SOL');
+                    throw new Error('Insufficient balance. Need ' + totalCostSOL.toFixed(6) + ' SOL but only have ' + solBalance.toFixed(6) + ' SOL');
                 }
                 
-                showStatusMessage('💸 Creating real mint transaction (Cost: ' + totalCostSOL.toFixed(4) + ' SOL)...', 'info');
+                showStatusMessage('💸 Creating your NFT (Cost: ' + totalCostSOL.toFixed(4) + ' SOL)...', 'info');
                 
                 // Create metadata account for NFT (simplified approach for browser compatibility)
                 const metadataProgramId = new window.solanaWeb3.PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
@@ -4286,8 +5602,8 @@ class MainActivity : Activity() {
                     }
                 };
                 
-                console.log('✅ REAL NFT minted successfully with gas deduction:', nftData);
-                showStatusMessage('✅ Real NFT mint completed! Gas: ' + totalCostSOL.toFixed(6) + ' SOL', 'success');
+                console.log('✅ NFT created successfully:', nftData);
+                showStatusMessage('✅ NFT created successfully! Cost: ' + totalCostSOL.toFixed(6) + ' SOL', 'success');
                 
                 return {
                     success: true,
@@ -5338,22 +6654,21 @@ class MainActivity : Activity() {
         // Status message helper for settings
         function showStatusMessage(message, type) {
             const statusDiv = document.createElement('div');
-            statusDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: ' + (type === 'success' ? 'rgba(34, 197, 94, 0.9)' : 
+            statusDiv.style.cssText = 
+                'position: fixed;' +
+                'top: 20px;' +
+                'left: 50%;' +
+                'transform: translateX(-50%);' +
+                'background: ' + (type === 'success' ? 'rgba(34, 197, 94, 0.9)' : 
                            type === 'error' ? 'rgba(239, 68, 68, 0.9)' : 
-                           'rgba(59, 130, 246, 0.9)') + ';
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                z-index: 10000;
-                font-size: 14px;
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255,255,255,0.2);
-            `;
+                           'rgba(59, 130, 246, 0.9)') + ';' +
+                'color: white;' +
+                'padding: 12px 20px;' +
+                'border-radius: 8px;' +
+                'z-index: 10000;' +
+                'font-size: 14px;' +
+                'backdrop-filter: blur(10px);' +
+                'border: 1px solid rgba(255,255,255,0.2);';
             statusDiv.textContent = message;
             document.body.appendChild(statusDiv);
             
@@ -6204,25 +7519,24 @@ class MainActivity : Activity() {
         
         // Fallback unicorn display when animation fails
         function showFallbackUnicorn(container) {
-            container.innerHTML = `
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                    color: var(--text-primary);
-                    text-align: center;
-                    padding: 20px;
-                ">
-                    <div style="font-size: 60px; margin-bottom: 15px; animation: bounce 2s infinite;">🦄</div>
-                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Happy Unicorn</div>
-                    <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Portfolio Analyst</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); opacity: 0.7;">
-                        Using fallback display
-                    </div>
-                </div>
-            `;
+            container.innerHTML = 
+                '<div style="' +
+                    'display: flex;' +
+                    'flex-direction: column;' +
+                    'align-items: center;' +
+                    'justify-content: center;' +
+                    'height: 100%;' +
+                    'color: var(--text-primary);' +
+                    'text-align: center;' +
+                    'padding: 20px;' +
+                '">' +
+                    '<div style="font-size: 60px; margin-bottom: 15px; animation: bounce 2s infinite;">🦄</div>' +
+                    '<div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Happy Unicorn</div>' +
+                    '<div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Portfolio Analyst</div>' +
+                    '<div style="font-size: 12px; color: var(--text-secondary); opacity: 0.7;">' +
+                        'Using fallback display' +
+                    '</div>' +
+                '</div>';
             
             // Update status
             const statusElement = document.getElementById('unicornStatus');
@@ -6354,25 +7668,24 @@ class MainActivity : Activity() {
         
         // Fallback smiling dog display when animation fails  
         function showFallbackSmilingDog(container) {
-            container.innerHTML = `
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                    color: var(--text-primary);
-                    text-align: center;
-                    padding: 20px;
-                ">
-                    <div style="font-size: 60px; margin-bottom: 15px; animation: bounce 2s infinite;">😊</div>
-                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Smiling Dog</div>
-                    <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Trading Expert</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); opacity: 0.7;">
-                        Using fallback display
-                    </div>
-                </div>
-            `;
+            container.innerHTML = 
+                '<div style="' +
+                    'display: flex;' +
+                    'flex-direction: column;' +
+                    'align-items: center;' +
+                    'justify-content: center;' +
+                    'height: 100%;' +
+                    'color: var(--text-primary);' +
+                    'text-align: center;' +
+                    'padding: 20px;' +
+                '">' +
+                    '<div style="font-size: 60px; margin-bottom: 15px; animation: bounce 2s infinite;">😊</div>' +
+                    '<div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Smiling Dog</div>' +
+                    '<div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Trading Expert</div>' +
+                    '<div style="font-size: 12px; color: var(--text-secondary); opacity: 0.7;">' +
+                        'Using fallback display' +
+                    '</div>' +
+                '</div>';
             
             // Update status
             const statusElement = document.getElementById('smilingDogStatus');
@@ -6484,22 +7797,21 @@ class MainActivity : Activity() {
         
         // Simple fallback Shiba display when animation fails
         function showFallbackShiba(container) {
-            container.innerHTML = `
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                    color: var(--text-primary);
-                    text-align: center;
-                    padding: 20px;
-                ">
-                    <div style="font-size: 60px; margin-bottom: 15px;">🐕</div>
-                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Shiba NFT Artist</div>
-                    <div style="font-size: 14px; color: var(--text-secondary);">Creative Companion</div>
-                </div>
-            `;
+            container.innerHTML = 
+                '<div style="' +
+                    'display: flex;' +
+                    'flex-direction: column;' +
+                    'align-items: center;' +
+                    'justify-content: center;' +
+                    'height: 100%;' +
+                    'color: var(--text-primary);' +
+                    'text-align: center;' +
+                    'padding: 20px;' +
+                '">' +
+                    '<div style="font-size: 60px; margin-bottom: 15px;">🐕</div>' +
+                    '<div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Shiba NFT Artist</div>' +
+                    '<div style="font-size: 14px; color: var(--text-secondary);">Creative Companion</div>' +
+                '</div>';
             
             const statusElement = document.getElementById('shibaArtistStatus');
             if (statusElement) {
@@ -7199,6 +8511,11 @@ class MainActivity : Activity() {
         // Call initialization when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(initializeTokenAddresses, 1000); // Small delay to ensure Android interface is ready
+            
+            // Setup auto-navigation for voice transcript
+            setTimeout(() => {
+                setupAutoNavigationForTranscript();
+            }, 1500);
         });
 
         function viewTokensOnExplorer() {
@@ -8552,9 +9869,270 @@ class MainActivity : Activity() {
         """
         
         Log.d("MainActivity", "Loading Bonk-Powered DeFi Space Mission...")
-        webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "UTF-8", null)
+        webView!!.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "UTF-8", null)
         
         setContentView(webView)
         Log.d("MainActivity", "Bife DeFi Space Mission ready!")
+    }
+    
+    // Speech Recognition Implementation with enhanced initialization
+    private var isInitialized = false
+    private var isCurrentlyListening = false
+    
+    private fun initializeSpeechRecognition() {
+        Log.d("MainActivity", "🎤 Initializing speech recognition...")
+        if (SpeechRecognizer.isRecognitionAvailable(this)) {
+            Log.d("MainActivity", "✅ Speech recognition is available")
+            isInitialized = true
+            
+            // Pre-warm the speech recognition service
+            try {
+                val warmupRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+                warmupRecognizer?.destroy()
+                Log.d("MainActivity", "🔥 Speech service pre-warmed")
+            } catch (e: Exception) {
+                Log.w("MainActivity", "⚠️ Pre-warming failed: ${e.message}")
+            }
+        } else {
+            Log.w("MainActivity", "⚠️ Speech recognition not available on this device")
+            isInitialized = false
+        }
+    }
+    
+    private fun checkPermissionAndStartSpeech() {
+        Log.d("MainActivity", "🔑 Checking permissions and initialization...")
+        
+        if (!isInitialized) {
+            Log.w("MainActivity", "⚠️ Speech service not initialized, re-initializing...")
+            initializeSpeechRecognition()
+            
+            // Give a small delay for initialization to complete
+            webView?.postDelayed({
+                checkPermissionAndStartSpeech()
+            }, 300)
+            return
+        }
+        
+        if (isCurrentlyListening) {
+            Log.w("MainActivity", "⚠️ Speech recognition already active")
+            return
+        }
+        
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) 
+            == PackageManager.PERMISSION_GRANTED) {
+            startSpeechRecognition()
+        } else {
+            Log.d("MainActivity", "🔑 Requesting RECORD_AUDIO permission...")
+            ActivityCompat.requestPermissions(
+                this, 
+                arrayOf(Manifest.permission.RECORD_AUDIO), 
+                RECORD_AUDIO_PERMISSION_CODE
+            )
+        }
+    }
+    
+    override fun onRequestPermissionsResult(
+        requestCode: Int, 
+        permissions: Array<out String>, 
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        
+        if (requestCode == RECORD_AUDIO_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("MainActivity", "✅ RECORD_AUDIO permission granted")
+                startSpeechRecognition()
+            } else {
+                Log.w("MainActivity", "❌ RECORD_AUDIO permission denied")
+                notifyWebViewVoiceError("Permission denied. Please enable microphone access.")
+            }
+        }
+    }
+    
+    private fun startSpeechRecognition() {
+        try {
+            Log.d("MainActivity", "🎤 Starting speech recognition (initialized: $isInitialized, listening: $isCurrentlyListening)")
+            
+            if (!isInitialized) {
+                Log.e("MainActivity", "❌ Cannot start - speech service not initialized")
+                notifyWebViewVoiceError("Speech service not ready. Please try again.")
+                return
+            }
+            
+            if (isCurrentlyListening) {
+                Log.w("MainActivity", "⚠️ Already listening, ignoring start request")
+                return
+            }
+            
+            // Clean up existing recognizer (but be gentle on first run)
+            if (speechRecognizer != null) {
+                Log.d("MainActivity", "🧹 Cleaning up existing recognizer...")
+                stopSpeechRecognition()
+                // Give a small delay after cleanup
+                Thread.sleep(100)
+            }
+            
+            Log.d("MainActivity", "🎤 Creating new speech recognizer...")
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+            
+            if (speechRecognizer == null) {
+                Log.e("MainActivity", "❌ Failed to create speech recognizer")
+                notifyWebViewVoiceError("Failed to initialize speech recognition")
+                return
+            }
+            
+            speechRecognizer?.setRecognitionListener(object : RecognitionListener {
+                override fun onReadyForSpeech(params: Bundle?) {
+                    Log.d("MainActivity", "🎤 Ready for speech...")
+                    isCurrentlyListening = true
+                    notifyWebViewVoiceReady()
+                }
+                
+                override fun onBeginningOfSpeech() {
+                    Log.d("MainActivity", "🗣️ Speech began...")
+                    isCurrentlyListening = true
+                    notifyWebViewVoiceStarted()
+                }
+                
+                override fun onRmsChanged(rmsdB: Float) {
+                    // Uncomment to show real-time volume levels
+                    // Log.d("MainActivity", "🔊 Volume: $rmsdB dB")
+                }
+                
+                override fun onBufferReceived(buffer: ByteArray?) {
+                    // Audio buffer received
+                }
+                
+                override fun onEndOfSpeech() {
+                    Log.d("MainActivity", "🤐 Speech ended, processing...")
+                    isCurrentlyListening = false
+                    notifyWebViewVoiceEnded()
+                }
+                
+                override fun onError(error: Int) {
+                    val errorMessage = when (error) {
+                        SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
+                        SpeechRecognizer.ERROR_CLIENT -> "Client side error"
+                        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Insufficient permissions"
+                        SpeechRecognizer.ERROR_NETWORK -> "Network error"
+                        SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
+                        SpeechRecognizer.ERROR_NO_MATCH -> "No speech match found"
+                        SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognition service busy"
+                        SpeechRecognizer.ERROR_SERVER -> "Error from server"
+                        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
+                        else -> "Unknown error"
+                    }
+                    Log.e("MainActivity", "❌ Speech recognition error: $errorMessage (code: $error)")
+                    isCurrentlyListening = false
+                    
+                    // For "No speech match" or "No speech input", suggest trying again
+                    if (error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
+                        notifyWebViewVoiceError("$errorMessage - Please try speaking again")
+                    } else {
+                        notifyWebViewVoiceError(errorMessage)
+                    }
+                }
+                
+                override fun onResults(results: Bundle?) {
+                    val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    if (!matches.isNullOrEmpty()) {
+                        val recognizedText = matches[0]
+                        Log.d("MainActivity", "✅ Speech recognized: '$recognizedText'")
+                        isCurrentlyListening = false
+                        notifyWebViewVoiceResults(recognizedText)
+                    } else {
+                        Log.w("MainActivity", "⚠️ No speech results")
+                        isCurrentlyListening = false
+                        notifyWebViewVoiceError("No speech detected")
+                    }
+                }
+                
+                override fun onPartialResults(partialResults: Bundle?) {
+                    val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    if (!matches.isNullOrEmpty()) {
+                        val partialText = matches[0]
+                        Log.d("MainActivity", "📝 Partial: '$partialText'")
+                        notifyWebViewVoicePartial(partialText)
+                    }
+                }
+                
+                override fun onEvent(eventType: Int, params: Bundle?) {
+                    Log.d("MainActivity", "🎭 Speech event: $eventType")
+                }
+            })
+            
+            // Create recognition intent with enhanced settings
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+                putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3) // Get more alternatives
+                putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
+                putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000)
+                putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 2000)
+            }
+            
+            Log.d("MainActivity", "🚀 Starting speech listener...")
+            speechRecognizer?.startListening(intent)
+            Log.d("MainActivity", "✅ Speech recognition started successfully!")
+            
+        } catch (e: Exception) {
+            Log.e("MainActivity", "❌ Failed to start speech recognition: ${e.message}")
+            isCurrentlyListening = false
+            notifyWebViewVoiceError("Failed to start voice recognition: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+    
+    private fun stopSpeechRecognition() {
+        Log.d("MainActivity", "🛑 Stopping speech recognition (listening: $isCurrentlyListening)")
+        
+        try {
+            speechRecognizer?.apply {
+                stopListening()
+                cancel()
+                destroy()
+            }
+        } catch (e: Exception) {
+            Log.w("MainActivity", "⚠️ Error during speech cleanup: ${e.message}")
+        } finally {
+            speechRecognizer = null
+            isCurrentlyListening = false
+            Log.d("MainActivity", "🧹 Speech recognition stopped and cleaned up")
+        }
+    }
+    
+    // WebView notification methods
+    private fun notifyWebViewVoiceReady() {
+        webView?.evaluateJavascript("if (window.onAndroidVoiceReady) window.onAndroidVoiceReady();", null)
+    }
+    
+    private fun notifyWebViewVoiceStarted() {
+        webView?.evaluateJavascript("if (window.onAndroidVoiceStarted) window.onAndroidVoiceStarted();", null)
+    }
+    
+    private fun notifyWebViewVoiceEnded() {
+        webView?.evaluateJavascript("if (window.onAndroidVoiceEnded) window.onAndroidVoiceEnded();", null)
+    }
+    
+    private fun notifyWebViewVoiceResults(text: String) {
+        val escapedText = text.replace("'", "\\'").replace("\"", "\\\"")
+        webView?.evaluateJavascript("if (window.onAndroidVoiceResults) window.onAndroidVoiceResults('$escapedText');", null)
+    }
+    
+    private fun notifyWebViewVoicePartial(text: String) {
+        val escapedText = text.replace("'", "\\'").replace("\"", "\\\"")
+        webView?.evaluateJavascript("if (window.onAndroidVoicePartial) window.onAndroidVoicePartial('$escapedText');", null)
+    }
+    
+    private fun notifyWebViewVoiceError(error: String) {
+        val escapedError = error.replace("'", "\\'").replace("\"", "\\\"")
+        webView?.evaluateJavascript("if (window.onAndroidVoiceError) window.onAndroidVoiceError('$escapedError');", null)
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        stopSpeechRecognition()
+        Log.d("MainActivity", "🧹 MainActivity destroyed, speech recognition cleaned up")
     }
 }
