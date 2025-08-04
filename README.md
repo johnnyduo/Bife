@@ -11,7 +11,7 @@
 
 *Revolutionary Voice-First AI DeFi Platform with Advanced Trading, NFT Creation, and Yield Farming*
 
-[🎯 Live Demo](#-live-demo) • [📋 Features](#-core-features) • [🏗️ Architecture](#-technical-architecture) • [🚀 Quick Start](#-quick-start) • [📚 Documentation](#-documentation)
+[📱 Download](#-download--installation) • [🎯 Live Demo](#-live-demo) • [📋 Features](#-core-features) • [🏗️ Architecture](#-technical-architecture) • [🚀 Quick Start](#-quick-start) • [📚 Documentation](#-documentation)
 
 </div>
 
@@ -20,6 +20,7 @@
 ## 📖 Table of Contents
 
 - [🌟 Project Overview](#-project-overview)
+- [📱 Download & Installation](#-download--installation)
 - [🎯 Core Features](#-core-features)
 - [🏗️ Technical Architecture](#-technical-architecture)
 - [💰 Tokenomics & Economy](#-tokenomics--economy)
@@ -44,6 +45,49 @@
 ### 🎯 Mission Statement
 
 To democratize DeFi access by making complex blockchain operations as natural as having a conversation, while maintaining institutional-grade security and performance standards.
+
+---
+
+## 📱 Download & Installation
+
+### 🎯 **For Judges & Reviewers**
+
+Ready to experience BIFE? Download the latest production-ready APK:
+
+<div align="center">
+
+### **📦 BIFE v1.1.0 - Production Release**
+
+[![Download APK](https://img.shields.io/badge/Download-APK%20v1.1.0-success?style=for-the-badge&logo=android)](https://github.com/johnnyduo/bife/releases/download/v1.1.0/BIFE-v1.1.0-release.apk)
+
+**File:** `BIFE-v1.1.0-release.apk` | **Size:** 854 KB | **SHA256:** `f61f5fb5b2f7310a6083a8033a642ba3074c7bee7c1d7f1c0918244fa210f821`
+
+</div>
+
+### ⚡ **Quick Installation**
+
+1. **Download** the APK file using the link above
+2. **Enable** "Install from Unknown Sources" in Android Settings
+3. **Install** the APK file on your Android device
+4. **Launch** BIFE and explore voice-powered DeFi!
+
+### 🚀 **What's New in v1.1.0**
+
+- ✅ **NFT Pagination System** - Browse collections with 6 items per page
+- ✅ **Raydium LP Integration** - SOL-BONK and USDC-BONK pools
+- ✅ **Enhanced Documentation** - Professional-grade project specs
+- ✅ **Production Optimization** - Code minification and resource shrinking
+- ✅ **Digital Signing** - Secure release with 2048-bit RSA certificate
+
+### 📋 **System Requirements**
+
+- **Android:** 5.0+ (API 21+)
+- **RAM:** 2GB minimum, 4GB recommended
+- **Storage:** 50MB free space
+- **Network:** Internet connection required
+- **Permissions:** Microphone (for voice commands)
+
+---
 
 ### 🏆 Key Differentiators
 
