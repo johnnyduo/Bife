@@ -174,9 +174,23 @@ graph TB
 
 | Token | Symbol | Decimals | Contract Address | Utility |
 |-------|---------|----------|------------------|---------|
-| **Mock BONK** | mBONK | 5 | `8wg7hAtfF1eJZLLb7TCHZhVuS3NkBdm8R7dtRPvn9BiP` | Primary trading & staking |
-| **Mock USDC** | mUSDC | 6 | `9nccat6babNG1u32Xu6d8XojGy7BGH6shwCLzoCrZWTT` | Stable pair & liquidity |
+| **Mock BONK** | mBONK | 5 | `GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5` | Primary trading & staking |
+| **Mock USDC** | mUSDC | 6 | `Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7` | Stable pair & liquidity |
 | **Solana** | SOL | 9 | Native | Network fees & base pair |
+
+### 🌊 **Raydium Devnet Liquidity Pools**
+
+| Pool | LP Token Address | Trading Pair | DEX | TVL Status |
+|------|------------------|--------------|-----|------------|
+| **SOL-BONK** | `7JuNHwGec8St6K5d9cQoZ1fZPQbdcsay3CZdZRSq9ec3` | SOL/mBONK | Raydium | Active |
+| **USDC-BONK** | `Bnfs4f7TjYzSnPXguSFEDP7di9iEiCaDmzdAaUiVTqhH` | mUSDC/mBONK | Raydium | Active |
+
+#### 🔄 **Liquidity Pool Features**
+- **Automated Market Making**: Constant product formula (x * y = k)
+- **Yield Farming**: LP token staking with additional BONK rewards
+- **Fee Structure**: 0.25% trading fees distributed to LP providers
+- **Impermanent Loss Protection**: AI-powered risk assessment and warnings
+- **Auto-compounding**: Automatic reinvestment of earned fees
 
 ### 💎 **BONK Token Utility**
 
@@ -217,10 +231,11 @@ const stakingTiers = {
 - **Partner Integration**: Revenue sharing with integrated protocols
 
 ### 🔄 **Liquidity Mechanisms**
-- **Automated Market Making**: Raydium pool participation
-- **Cross-DEX Arbitrage**: Jupiter aggregation for best prices
-- **Liquidity Mining**: Rewards for LP token holders
-- **Treasury Management**: Protocol-owned liquidity (POL)
+- **Automated Market Making**: Active participation in SOL-BONK and USDC-BONK Raydium pools
+- **Cross-DEX Arbitrage**: Jupiter aggregation for best prices across multiple DEXs
+- **Liquidity Mining**: Rewards for LP token holders in `7JuNHwGec8St6K5d9cQoZ1fZPQbdcsay3CZdZRSq9ec3` (SOL-BONK) and `Bnfs4f7TjYzSnPXguSFEDP7di9iEiCaDmzdAaUiVTqhH` (USDC-BONK)
+- **Treasury Management**: Protocol-owned liquidity (POL) with smart rebalancing
+- **Yield Optimization**: AI-powered liquidity allocation for maximum returns
 
 ---
 
@@ -362,7 +377,11 @@ const supportedDEXs = {
     name: "Raydium AMM",
     type: "Automated Market Maker",
     integration: "Direct SDK",
-    features: ["LP provision", "Yield farming", "Price discovery"]
+    features: ["LP provision", "Yield farming", "Price discovery"],
+    activePools: [
+      "SOL-BONK: 7JuNHwGec8St6K5d9cQoZ1fZPQbdcsay3CZdZRSq9ec3",
+      "USDC-BONK: Bnfs4f7TjYzSnPXguSFEDP7di9iEiCaDmzdAaUiVTqhH"
+    ]
   },
   jupiter: {
     name: "Jupiter Aggregator",
@@ -763,6 +782,14 @@ android {
 GEMINI_API_KEY=your_google_gemini_api_key
 SOLSCAN_API_KEY=your_solscan_api_key
 JUPITER_API_KEY=your_jupiter_api_key
+
+# Solana Devnet Configuration
+MOCK_BONK_MINT=GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5
+MOCK_USDC_MINT=Boo4LSXTuduNMZp6nag4cA6kg4FEkwz7QTA29pXXW3c7
+
+# Raydium Devnet Liquidity Pools
+SOL_BONK_LP=7JuNHwGec8St6K5d9cQoZ1fZPQbdcsay3CZdZRSq9ec3
+USDC_BONK_LP=Bnfs4f7TjYzSnPXguSFEDP7di9iEiCaDmzdAaUiVTqhH
 
 # Optional for enhanced features
 PINATA_API_KEY=your_pinata_ipfs_key
