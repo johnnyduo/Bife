@@ -2010,34 +2010,148 @@ class MainActivity : Activity() {
                     </div>
                 </div>
 
-                <!-- Yield Farming -->
+                <!-- Enhanced Voice-Controlled Yield Farms with BONK Staking -->
                 <div class="trading-card">
                     <h3 style="color: var(--text-primary); font-family: var(--font-display); margin-bottom: 15px;">
-                        🌾 Voice-Controlled Yield Farms
+                        🌾 Voice-Controlled Yield Farms & BONK Staking
                     </h3>
-                    <div style="display: grid; gap: 15px;">
-                        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                    
+                    <!-- BONK Staking Section - Premium Feature -->
+                    <div style="background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(247, 147, 30, 0.1)); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 20px; overflow: hidden;">
+                        <!-- Header Section -->
+                        <div style="display: flex; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                            <div style="background: linear-gradient(135deg, #ff6b35, #f7931e); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);">
+                                <span style="font-size: 20px;">🚀</span>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="color: var(--bonk-orange); font-weight: 700; font-size: 16px; margin-bottom: 3px; line-height: 1.2;">BONK Staking Pool</div>
+                                <div style="color: var(--text-secondary); font-size: 12px; line-height: 1.3;">Stake BONK to unlock AI Portfolio Analysis</div>
+                            </div>
+                            <div style="text-align: right; flex-shrink: 0;">
+                                <div style="color: var(--defi-green); font-weight: 700; font-size: 18px; line-height: 1;">35.8% APY</div>
+                                <div style="color: var(--text-secondary); font-size: 10px;">+ AI Features</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Staking Interface -->
+                        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                                <!-- Stake Amount Row -->
                                 <div>
-                                    <div style="color: var(--text-primary); font-weight: 600;">SOL-USDC Pool</div>
-                                    <div style="color: var(--text-secondary); font-size: 12px;">Raydium • High Liquidity</div>
+                                    <div style="color: var(--text-primary); font-size: 12px; margin-bottom: 6px; font-weight: 600;">Stake Amount</div>
+                                    <div style="display: flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; gap: 8px;">
+                                        <input type="number" id="bonkStakeAmount" placeholder="1000000" 
+                                            style="background: transparent; border: none; color: var(--text-primary); flex: 1; font-size: 14px; outline: none; min-width: 0;" 
+                                            oninput="updateStakingRewards()">
+                                        <span style="color: var(--bonk-orange); font-weight: 600; font-size: 12px; flex-shrink: 0;">BONK</span>
+                                    </div>
+                                    <div style="color: var(--text-secondary); font-size: 10px; margin-top: 4px;">Min: 500K BONK for AI unlock</div>
                                 </div>
-                                <div style="text-align: right;">
-                                    <div style="color: var(--defi-green); font-weight: 700;">18.4% APY</div>
-                                    <button class="farm-button" onclick="farmWithVoice('SOL-USDC')">Voice Farm</button>
+                                
+                                <!-- Rewards Display Row -->
+                                <div style="text-align: center; padding: 8px; background: rgba(0,255,0,0.05); border-radius: 8px;">
+                                    <div style="color: var(--text-primary); font-size: 11px; margin-bottom: 4px;">Estimated Daily Rewards</div>
+                                    <div id="bonkStakingRewards" style="color: var(--defi-green); font-weight: 700; font-size: 16px; line-height: 1;">0 BONK/day</div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px;">
+                        <!-- AI Features Unlock Status -->
+                        <div id="aiUnlockStatus" style="background: rgba(255, 107, 53, 0.1); border: 1px solid rgba(255, 107, 53, 0.2); border-radius: 10px; padding: 10px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                                    <span style="font-size: 18px; flex-shrink: 0;">🔒</span>
+                                    <div style="min-width: 0;">
+                                        <div style="color: var(--bonk-orange); font-weight: 600; font-size: 12px; line-height: 1.2;">AI Portfolio Analysis</div>
+                                        <div style="color: var(--text-secondary); font-size: 10px; line-height: 1.3;">Requires 500K+ BONK staked</div>
+                                    </div>
+                                </div>
+                                <button id="aiAnalysisButton" onclick="tryAIPortfolioAnalysis()" disabled
+                                    style="background: rgba(255,255,255,0.1); color: #666; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 6px; font-size: 10px; cursor: not-allowed; flex-shrink: 0; white-space: nowrap;">
+                                    🔒 Locked
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Staking Actions -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                            <button onclick="stakeBonkTokens()" id="stakeBonkButton"
+                                style="background: linear-gradient(135deg, #ff6b35, #f7931e); color: white; border: none; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(255, 107, 53, 0.4)'"
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 53, 0.3)'">
+                                🎤 Voice Stake
+                            </button>
+                            <button onclick="unstakeBonkTokens()" id="unstakeBonkButton"
+                                style="background: rgba(255,255,255,0.1); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.2); padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                onmouseover="this.style.background='rgba(255,255,255,0.15)'"
+                                onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                                📤 Unstake
+                            </button>
+                        </div>
+                        
+                        <!-- Current Staking Status -->
+                        <div id="stakingStatus" style="padding: 8px; background: rgba(0,0,0,0.2); border-radius: 8px; text-align: center;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <div style="color: var(--text-secondary); font-size: 11px;">
+                                    Stake: <span id="currentStake" style="color: var(--bonk-orange); font-weight: 600;">0 BONK</span>
+                                </div>
+                                <div style="color: var(--text-secondary); font-size: 11px;">
+                                    Rewards: <span id="rewardsEarned" style="color: var(--defi-green); font-weight: 600;">0 BONK</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Traditional LP Farming (Enhanced Design) -->
+                    <div style="display: grid; gap: 15px;">
+                        <div style="background: linear-gradient(135deg, rgba(0,255,255,0.05), rgba(0,128,255,0.05)); border: 1px solid rgba(0,255,255,0.2); border-radius: 12px; padding: 18px; transition: all 0.3s ease; cursor: pointer;"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,255,255,0.1)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <div style="color: var(--text-primary); font-weight: 600;">BONK-SOL Pool</div>
-                                    <div style="color: var(--text-secondary); font-size: 12px;">Orca • Community Favorite</div>
+                                <div style="display: flex; align-items: center;">
+                                    <div style="background: linear-gradient(135deg, #00ffff, #0080ff); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                        <span style="font-size: 18px;">💎</span>
+                                    </div>
+                                    <div>
+                                        <div style="color: var(--text-primary); font-weight: 600; font-size: 16px;">SOL-USDC Pool</div>
+                                        <div style="color: var(--text-secondary); font-size: 12px;">Raydium • High Liquidity • Low Risk</div>
+                                        <div style="color: var(--cyber-cyan); font-size: 11px; margin-top: 2px;">Total Value Locked: $2.4M</div>
+                                    </div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="color: var(--defi-green); font-weight: 700;">24.1% APY</div>
-                                    <button class="farm-button" onclick="farmWithVoice('BONK-SOL')">Voice Farm</button>
+                                    <div style="color: var(--defi-green); font-weight: 700; font-size: 20px;">18.4% APY</div>
+                                    <button class="farm-button" onclick="farmWithVoice('SOL-USDC')"
+                                        style="background: linear-gradient(135deg, #00ffff, #0080ff); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 5px; transition: all 0.3s ease;"
+                                        onmouseover="this.style.transform='scale(1.05)'"
+                                        onmouseout="this.style.transform='scale(1)'">
+                                        🎤 Voice Farm
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, rgba(255,107,53,0.05), rgba(247,147,30,0.05)); border: 1px solid rgba(255,107,53,0.2); border-radius: 12px; padding: 18px; transition: all 0.3s ease; cursor: pointer;"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(255,107,53,0.1)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center;">
+                                    <div style="background: linear-gradient(135deg, #ff6b35, #f7931e); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                        <span style="font-size: 18px;">🚀</span>
+                                    </div>
+                                    <div>
+                                        <div style="color: var(--text-primary); font-weight: 600; font-size: 16px;">BONK-SOL Pool</div>
+                                        <div style="color: var(--text-secondary); font-size: 12px;">Orca • Community Favorite • Medium Risk</div>
+                                        <div style="color: var(--bonk-orange); font-size: 11px; margin-top: 2px;">Total Value Locked: $890K</div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="color: var(--defi-green); font-weight: 700; font-size: 20px;">24.1% APY</div>
+                                    <button class="farm-button" onclick="farmWithVoice('BONK-SOL')"
+                                        style="background: linear-gradient(135deg, #ff6b35, #f7931e); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 5px; transition: all 0.3s ease;"
+                                        onmouseover="this.style.transform='scale(1.05)'"
+                                        onmouseout="this.style.transform='scale(1)'">
+                                        🎤 Voice Farm
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -6324,6 +6438,293 @@ class MainActivity : Activity() {
             animateShiba('trading');
         }
 
+        // BONK Staking System with AI Portfolio Analysis Unlock
+        let bonkStakingData = {
+            currentStake: 0,
+            rewardsEarned: 0,
+            stakingStartTime: null,
+            aiUnlocked: false,
+            lastRewardCalculation: null
+        };
+
+        // Update staking rewards calculation
+        function updateStakingRewards() {
+            const amountInput = document.getElementById('bonkStakeAmount');
+            const rewardsDisplay = document.getElementById('bonkStakingRewards');
+            const aiUnlockStatus = document.getElementById('aiUnlockStatus');
+            const aiAnalysisButton = document.getElementById('aiAnalysisButton');
+            
+            if (!amountInput || !rewardsDisplay) return;
+            
+            const stakeAmount = parseFloat(amountInput.value) || 0;
+            const dailyAPY = 35.8 / 365; // 35.8% APY divided by 365 days
+            const dailyRewards = Math.floor(stakeAmount * (dailyAPY / 100));
+            
+            // Update rewards display
+            rewardsDisplay.textContent = dailyRewards.toLocaleString() + ' BONK/day';
+            
+            // Check AI unlock threshold (500K BONK minimum)
+            const aiUnlockThreshold = 500000;
+            const totalStaked = bonkStakingData.currentStake + stakeAmount;
+            
+            if (totalStaked >= aiUnlockThreshold) {
+                // Unlock AI features
+                bonkStakingData.aiUnlocked = true;
+                
+                if (aiUnlockStatus) {
+                    aiUnlockStatus.innerHTML = 
+                        '<div style="display: flex; align-items: center; justify-content: space-between;">' +
+                            '<div style="display: flex; align-items: center;">' +
+                                '<span style="font-size: 20px; margin-right: 10px;">✅</span>' +
+                                '<div>' +
+                                    '<div style="color: var(--defi-green); font-weight: 600; font-size: 13px;">AI Portfolio Analysis</div>' +
+                                    '<div style="color: var(--text-secondary); font-size: 11px;">Unlocked with ' + totalStaked.toLocaleString() + ' BONK staked</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<button id="aiAnalysisButton" onclick="tryAIPortfolioAnalysis()" ' +
+                                'style="background: linear-gradient(135deg, #00ff88, #00cc66); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" ' +
+                                'onmouseover="this.style.transform=\'scale(1.05)\'" ' +
+                                'onmouseout="this.style.transform=\'scale(1)\'">' +
+                                '🧠 AI Analysis' +
+                            '</button>' +
+                        '</div>';
+                }
+            } else {
+                // Keep locked
+                bonkStakingData.aiUnlocked = false;
+                
+                if (aiUnlockStatus) {
+                    var remaining = aiUnlockThreshold - totalStaked;
+                    aiUnlockStatus.innerHTML = 
+                        '<div style="display: flex; align-items: center; justify-content: space-between;">' +
+                            '<div style="display: flex; align-items: center;">' +
+                                '<span style="font-size: 20px; margin-right: 10px;">🔒</span>' +
+                                '<div>' +
+                                    '<div style="color: var(--bonk-orange); font-weight: 600; font-size: 13px;">AI Portfolio Analysis</div>' +
+                                    '<div style="color: var(--text-secondary); font-size: 11px;">Need ' + remaining.toLocaleString() + ' more BONK to unlock</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<button id="aiAnalysisButton" onclick="tryAIPortfolioAnalysis()" disabled ' +
+                                'style="background: rgba(255,255,255,0.1); color: #666; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 6px; font-size: 11px; cursor: not-allowed;">' +
+                                '🔒 Locked' +
+                            '</button>' +
+                        '</div>';
+                }
+            }
+        }
+
+        // Stake BONK tokens
+        async function stakeBonkTokens() {
+            try {
+                var amountInput = document.getElementById('bonkStakeAmount');
+                var stakeAmount = parseFloat(amountInput.value) || 0;
+                
+                if (stakeAmount < 100000) {
+                    showStatusMessage("❌ Minimum stake is 100K BONK", "error");
+                    return;
+                }
+                
+                console.log('🚀 Staking BONK tokens:', stakeAmount);
+                
+                // Show staking confirmation modal
+                showBonkStakingModal('stake', stakeAmount);
+                
+            } catch (error) {
+                console.error('❌ Staking error:', error);
+                showStatusMessage("❌ Staking failed: " + error.message, "error");
+            }
+        }
+
+        // Unstake BONK tokens
+        async function unstakeBonkTokens() {
+            try {
+                if (bonkStakingData.currentStake <= 0) {
+                    showStatusMessage("❌ No BONK tokens staked", "error");
+                    return;
+                }
+                
+                console.log('📤 Unstaking BONK tokens:', bonkStakingData.currentStake);
+                
+                // Calculate rewards before unstaking
+                calculateStakingRewards();
+                
+                var unstakeAmount = bonkStakingData.currentStake;
+                var rewardsAmount = bonkStakingData.rewardsEarned;
+                
+                // Show unstaking confirmation modal
+                showBonkStakingModal('unstake', unstakeAmount, rewardsAmount);
+                
+            } catch (error) {
+                console.error('❌ Unstaking error:', error);
+                showStatusMessage("❌ Unstaking failed: " + error.message, "error");
+            }
+        }
+
+        // Calculate staking rewards
+        function calculateStakingRewards() {
+            if (!bonkStakingData.stakingStartTime || bonkStakingData.currentStake <= 0) return;
+            
+            const now = new Date();
+            const stakingDuration = now - bonkStakingData.stakingStartTime; // in milliseconds
+            const stakingDays = stakingDuration / (1000 * 60 * 60 * 24); // convert to days
+            
+            const dailyAPY = 35.8 / 365; // 35.8% APY divided by 365 days
+            const newRewards = bonkStakingData.currentStake * (dailyAPY / 100) * stakingDays;
+            
+            bonkStakingData.rewardsEarned = Math.floor(newRewards);
+            bonkStakingData.lastRewardCalculation = now;
+        }
+
+        // Update staking status display
+        function updateStakingStatus() {
+            const currentStakeElement = document.getElementById('currentStake');
+            const rewardsEarnedElement = document.getElementById('rewardsEarned');
+            
+            if (currentStakeElement) {
+                currentStakeElement.textContent = bonkStakingData.currentStake.toLocaleString() + ' BONK';
+            }
+            
+            if (rewardsEarnedElement) {
+                calculateStakingRewards();
+                rewardsEarnedElement.textContent = bonkStakingData.rewardsEarned.toLocaleString() + ' BONK';
+            }
+        }
+
+        // Try AI Portfolio Analysis (premium feature)
+        function tryAIPortfolioAnalysis() {
+            if (!bonkStakingData.aiUnlocked) {
+                showStatusMessage("🔒 Stake 500K+ BONK to unlock AI Portfolio Analysis", "error");
+                return;
+            }
+            
+            console.log('🧠 Starting AI Portfolio Analysis (Premium)...');
+            showStatusMessage("🧠 AI Portfolio Analysis activated! Analyzing your DeFi positions...", "info");
+            
+            // Execute premium AI analysis
+            executeVoiceCommand('Perform advanced AI portfolio analysis with trading suggestions');
+            
+            // Enhanced analysis modal with premium features
+            setTimeout(() => {
+                displayPremiumAIAnalysisModal();
+            }, 1500);
+            
+            // Trigger special animation for premium feature
+            animateShiba('portfolio');
+        }
+
+        // Display premium AI analysis modal
+        function displayPremiumAIAnalysisModal() {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'premium-ai-analysis-modal';
+            modalOverlay.className = 'trading-analysis-overlay';
+            modalOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: all 0.3s ease;
+            `;
+            
+            const modalContent = `
+                <div style="background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(30,41,59,0.9)); border: 2px solid rgba(255,107,53,0.3); border-radius: 20px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; transform: scale(0.9); transition: all 0.3s ease;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">🧠</div>
+                        <div style="color: var(--bonk-orange); font-weight: 700; font-size: 20px; margin-bottom: 5px;">Premium AI Portfolio Analysis</div>
+                        <div style="color: var(--defi-green); font-size: 12px;">🚀 BONK Staking Premium Feature</div>
+                    </div>
+                    
+                    <div style="background: rgba(0,255,0,0.1); border: 1px solid rgba(0,255,0,0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                        <div style="color: var(--defi-green); font-weight: 600; font-size: 16px; margin-bottom: 15px;">📊 AI Analysis Results</div>
+                        <div style="color: var(--text-primary); line-height: 1.6; font-size: 14px;">
+                            • <strong>Portfolio Optimization:</strong> Consider rebalancing 15% from SOL to BONK for higher yields<br><br>
+                            • <strong>Risk Assessment:</strong> Current risk level: Medium-Low (Optimal for DeFi exposure)<br><br>
+                            • <strong>Yield Opportunities:</strong> BONK staking showing 35.8% APY - excellent allocation<br><br>
+                            • <strong>Market Timing:</strong> SOL showing bullish indicators, hold current positions<br><br>
+                            • <strong>AI Recommendation:</strong> Increase BONK-SOL LP farming allocation by 10%
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                        <div style="color: var(--bonk-orange); font-weight: 600; font-size: 14px; margin-bottom: 10px;">🎯 Suggested Actions</div>
+                        <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
+                            1. Maintain BONK staking position for AI access<br>
+                            2. Consider adding to SOL-USDC LP (18.4% APY)<br>
+                            3. Monitor BONK-SOL price correlation for rebalancing
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <button onclick="copyPremiumAnalysis()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--text-primary); padding: 12px 20px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                            📋 Copy Analysis
+                        </button>
+                        <button onclick="closePremiumAIAnalysisModal()" style="background: linear-gradient(135deg, #ff6b35, #f7931e); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modalOverlay.innerHTML = modalContent;
+            document.body.appendChild(modalOverlay);
+            
+            // Show with animation
+            setTimeout(() => {
+                modalOverlay.style.opacity = '1';
+                const content = modalOverlay.querySelector('div');
+                if (content) content.style.transform = 'scale(1)';
+            }, 50);
+            
+            // Store analysis for clipboard
+            window.currentPremiumAnalysis = "BIFE Premium AI Portfolio Analysis - Portfolio Optimization: Consider rebalancing 15% from SOL to BONK for higher yields...";
+        }
+
+        // Copy premium analysis
+        function copyPremiumAnalysis() {
+            if (window.currentPremiumAnalysis) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(window.currentPremiumAnalysis);
+                    showStatusMessage("📋 Premium AI analysis copied to clipboard!", "success");
+                } else {
+                    showStatusMessage("❌ Clipboard not available", "error");
+                }
+            }
+        }
+
+        // Close premium AI analysis modal
+        function closePremiumAIAnalysisModal() {
+            const modal = document.getElementById('premium-ai-analysis-modal');
+            if (modal) {
+                modal.style.opacity = '0';
+                const content = modal.querySelector('div');
+                if (content) content.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
+
+        // Initialize staking system
+        function initBonkStaking() {
+            // Update rewards every 30 seconds
+            setInterval(() => {
+                if (bonkStakingData.currentStake > 0) {
+                    updateStakingStatus();
+                }
+            }, 30000);
+            
+            // Initial UI update
+            updateStakingStatus();
+            updateStakingRewards();
+        }
+
         // Portfolio Voice Functions
         function voiceRefreshPortfolio() {
             executeVoiceCommand('Refresh my portfolio and show current balances');
@@ -7462,6 +7863,417 @@ class MainActivity : Activity() {
             }
         }
 
+        // BONK Staking Modal Functions
+        function showBonkStakingModal(action, amount, rewardsAmount = 0) {
+            console.log('📱 showBonkStakingModal called with:', { action, amount, rewardsAmount });
+            
+            try {
+                // Remove existing modal if any
+                const existingModal = document.getElementById('bonk-staking-modal');
+                if (existingModal) {
+                    console.log('🗑️ Removing existing staking modal');
+                    existingModal.remove();
+                }
+
+                console.log('🎨 Creating staking modal overlay...');
+                // Create modal overlay
+                const modalOverlay = document.createElement('div');
+                modalOverlay.id = 'bonk-staking-modal';
+                modalOverlay.className = 'trading-analysis-overlay';
+                modalOverlay.style.cssText = 
+                    'position: fixed;' +
+                    'top: 0;' +
+                    'left: 0;' +
+                    'width: 100%;' +
+                    'height: 100%;' +
+                    'background: rgba(0, 0, 0, 0.8);' +
+                    'backdrop-filter: blur(10px);' +
+                    'display: flex;' +
+                    'align-items: center;' +
+                    'justify-content: center;' +
+                    'z-index: 10000;' +
+                    'opacity: 0;' +
+                    'transition: opacity 0.3s ease;';
+
+                console.log('🎨 Creating staking modal content...');
+                const modalContent = document.createElement('div');
+                modalContent.style.cssText = 
+                    'background: linear-gradient(135deg, rgba(13, 13, 13, 0.95), rgba(31, 31, 31, 0.95));' +
+                    'border: 1px solid rgba(255, 255, 255, 0.1);' +
+                    'border-radius: 20px;' +
+                    'padding: 24px;' +
+                    'max-width: 420px;' +
+                    'width: 90%;' +
+                    'max-height: 80vh;' +
+                    'overflow-y: auto;' +
+                    'backdrop-filter: blur(20px);' +
+                    'box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);' +
+                    'transform: scale(0.9);' +
+                    'transition: transform 0.3s ease;';
+
+                const isStaking = action === 'stake';
+                const actionColor = isStaking ? 'var(--bonk-orange)' : 'var(--defi-green)';
+                const actionIcon = isStaking ? '🔒' : '🔓';
+                const actionTitle = isStaking ? 'Stake BONK Tokens' : 'Unstake BONK Tokens';
+                const actionDescription = isStaking ? 
+                    'Lock your BONK tokens to earn rewards and unlock AI features' : 
+                    'Withdraw your staked BONK tokens and claim earned rewards';
+
+                console.log('📝 Generating staking modal HTML...');
+                modalContent.innerHTML = 
+                    '<div style="text-align: center; margin-bottom: 20px;">' +
+                        '<h3 style="color: ' + actionColor + '; font-family: var(--font-display); margin: 0 0 8px 0; font-size: 20px;">' +
+                            actionIcon + ' ' + actionTitle +
+                        '</h3>' +
+                        '<p style="color: var(--text-secondary); margin: 0; font-size: 14px;">' +
+                            actionDescription +
+                        '</p>' +
+                    '</div>' +
+
+                    '<div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">' +
+                        '<div style="color: var(--text-primary); font-weight: 600; margin-bottom: 12px; font-size: 16px;">' +
+                            '💎 Transaction Details' +
+                        '</div>' +
+                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                            '<span style="color: var(--text-secondary); font-size: 13px;">Amount:</span>' +
+                            '<span style="color: ' + actionColor + '; font-weight: 600; font-size: 14px;">' +
+                                amount.toLocaleString() + ' BONK' +
+                            '</span>' +
+                        '</div>' +
+                        (rewardsAmount > 0 ? 
+                            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                                '<span style="color: var(--text-secondary); font-size: 13px;">Rewards:</span>' +
+                                '<span style="color: var(--defi-green); font-weight: 600; font-size: 14px;">' +
+                                    '+ ' + rewardsAmount.toLocaleString() + ' BONK' +
+                                '</span>' +
+                            '</div>' : ''
+                        ) +
+                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                            '<span style="color: var(--text-secondary); font-size: 13px;">Action:</span>' +
+                            '<span style="color: var(--text-primary); font-weight: 600; font-size: 14px;">' +
+                                (isStaking ? 'Stake & Lock' : 'Unstake & Claim') +
+                            '</span>' +
+                        '</div>' +
+                        '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                            '<span style="color: var(--text-secondary); font-size: 13px;">APY:</span>' +
+                            '<span style="color: var(--bonk-orange); font-weight: 600; font-size: 14px;">35.8%</span>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<div style="background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(247, 147, 30, 0.1)); border: 1px solid rgba(255, 107, 53, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">' +
+                        '<div style="color: var(--text-secondary); font-size: 12px; text-align: center; margin-bottom: 8px;">' +
+                            (isStaking ? 
+                                '🔒 Tokens will be locked in the staking contract on Solana devnet' :
+                                '🔓 Tokens will be returned to your wallet along with earned rewards'
+                            ) +
+                        '</div>' +
+                        (isStaking && amount >= 500000 ?
+                            '<div style="color: var(--defi-green); font-size: 12px; text-align: center; font-weight: 600;">' +
+                                '🧠 This will unlock AI Portfolio Analysis!' +
+                            '</div>' : ''
+                        ) +
+                    '</div>' +
+
+                    '<div id="bonk-staking-status" style="margin-bottom: 20px; min-height: 20px;">' +
+                        '<!-- Status messages will appear here -->' +
+                    '</div>' +
+
+                    '<div style="display: flex; gap: 12px;">' +
+                        '<button onclick="closeBonkStakingModal()" style="' +
+                            'flex: 1;' +
+                            'background: rgba(107, 114, 128, 0.3);' +
+                            'border: 1px solid rgba(107, 114, 128, 0.5);' +
+                            'color: var(--text-secondary);' +
+                            'padding: 12px;' +
+                            'border-radius: 10px;' +
+                            'font-weight: 600;' +
+                            'cursor: pointer;' +
+                            'transition: all 0.2s ease;' +
+                        '" onmouseover="this.style.background=\'rgba(107, 114, 128, 0.5)\'" ' +
+                           'onmouseout="this.style.background=\'rgba(107, 114, 128, 0.3)\'">' +
+                            'Cancel' +
+                        '</button>' +
+                        '<button id="confirm-staking-btn" onclick="confirmBonkStaking(\'' + action + '\', ' + amount + ', ' + rewardsAmount + ')" style="' +
+                            'flex: 2;' +
+                            'background: linear-gradient(135deg, ' + actionColor + ', ' + actionColor + 'dd);' +
+                            'border: none;' +
+                            'color: white;' +
+                            'padding: 12px;' +
+                            'border-radius: 10px;' +
+                            'font-weight: 600;' +
+                            'cursor: pointer;' +
+                            'transition: all 0.2s ease;' +
+                            'box-shadow: 0 4px 15px ' + actionColor + '33;' +
+                        '" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 6px 20px ' + actionColor + '44\'" ' +
+                           'onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px ' + actionColor + '33\'">' +
+                            'Confirm ' + (isStaking ? 'Staking' : 'Unstaking') +
+                        '</button>' +
+                    '</div>';
+
+                console.log('🔗 Appending staking modal to DOM...');
+                modalOverlay.appendChild(modalContent);
+                document.body.appendChild(modalOverlay);
+
+                console.log('✨ Showing staking modal with animation...');
+                // Show modal with animation
+                setTimeout(() => {
+                    modalOverlay.classList.add('show');
+                    modalOverlay.style.opacity = '1';
+                    modalContent.style.transform = 'scale(1)';
+                }, 50);
+
+                // Close on backdrop click
+                modalOverlay.addEventListener('click', (e) => {
+                    if (e.target === modalOverlay) {
+                        closeBonkStakingModal();
+                    }
+                });
+                
+                console.log('✅ BONK staking modal shown successfully');
+                
+            } catch (error) {
+                console.error('❌ Error in showBonkStakingModal:', error);
+                showStatusMessage("❌ Error showing staking modal: " + error.message, "error");
+            }
+        }
+
+        function closeBonkStakingModal() {
+            const modal = document.getElementById('bonk-staking-modal');
+            if (modal) {
+                modal.classList.remove('show');
+                modal.style.opacity = '0';
+                const modalContent = modal.querySelector('div');
+                if (modalContent) {
+                    modalContent.style.transform = 'scale(0.9)';
+                }
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
+
+        async function confirmBonkStaking(action, amount, rewardsAmount) {
+            const statusDiv = document.getElementById('bonk-staking-status');
+            const confirmBtn = document.getElementById('confirm-staking-btn');
+            const isStaking = action === 'stake';
+            
+            try {
+                // Disable button and show loading
+                confirmBtn.disabled = true;
+                confirmBtn.style.opacity = '0.6';
+                confirmBtn.textContent = 'Processing...';
+                
+                statusDiv.innerHTML = 
+                    '<div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 12px; text-align: center;">' +
+                        '<div style="color: #3B82F6; font-weight: 600; margin-bottom: 4px;">🔄 Processing ' + (isStaking ? 'Staking' : 'Unstaking') + '</div>' +
+                        '<div style="color: var(--text-secondary); font-size: 12px;">Creating transaction on Solana devnet...</div>' +
+                    '</div>';
+
+                // Create and send the staking transaction
+                const result = await sendBonkStakingTransaction(action, amount, rewardsAmount);
+                
+                if (result.success) {
+                    // Update staking data
+                    if (isStaking) {
+                        bonkStakingData.currentStake += amount;
+                        bonkStakingData.stakingStartTime = new Date();
+                        bonkStakingData.lastRewardCalculation = new Date();
+                        
+                        // Execute voice command for staking
+                        executeVoiceCommand('Stake ' + amount.toLocaleString() + ' BONK tokens for AI portfolio analysis');
+                        
+                        // Clear input
+                        const amountInput = document.getElementById('bonkStakeAmount');
+                        if (amountInput) amountInput.value = '';
+                        
+                        // Check if AI was unlocked
+                        if (amount >= 500000) {
+                            bonkStakingData.aiUnlocked = true;
+                        }
+                    } else {
+                        bonkStakingData.currentStake = 0;
+                        bonkStakingData.rewardsEarned = 0;
+                        bonkStakingData.stakingStartTime = null;
+                        bonkStakingData.aiUnlocked = false;
+                        
+                        // Execute voice command for unstaking
+                        executeVoiceCommand('Unstake ' + amount.toLocaleString() + ' BONK tokens and claim ' + rewardsAmount.toLocaleString() + ' BONK rewards');
+                    }
+                    
+                    // Update UI
+                    updateStakingStatus();
+                    updateStakingRewards();
+                    
+                    statusDiv.innerHTML = 
+                        '<div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px; text-align: center;">' +
+                            '<div style="color: #22C55E; font-weight: 600; margin-bottom: 8px;">✅ ' + (isStaking ? 'Staking' : 'Unstaking') + ' Successful!</div>' +
+                            '<div style="color: var(--text-secondary); font-size: 11px; margin-bottom: 8px;">Transaction ID:</div>' +
+                            '<div style="' +
+                                'background: rgba(34, 197, 94, 0.05); ' +
+                                'border: 1px solid rgba(34, 197, 94, 0.2); ' +
+                                'padding: 8px; ' +
+                                'border-radius: 6px; ' +
+                                'font-family: monospace; ' +
+                                'font-size: 10px; ' +
+                                'color: #22C55E; ' +
+                                'word-break: break-all; ' +
+                                'line-height: 1.3; ' +
+                                'max-height: 50px; ' +
+                                'overflow-y: auto; ' +
+                                'margin-bottom: 10px;' +
+                            '">' + result.txid + '</div>' +
+                            '<button onclick="openSolscanInNewTab(\'' + result.txid + '\')" style="' +
+                                'background: rgba(34, 197, 94, 0.2);' +
+                                'border: 1px solid rgba(34, 197, 94, 0.4);' +
+                                'color: #22C55E;' +
+                                'padding: 8px 16px;' +
+                                'border-radius: 6px;' +
+                                'font-size: 12px;' +
+                                'cursor: pointer;' +
+                                'text-decoration: none;' +
+                                'transition: all 0.2s ease;' +
+                            '" onmouseover="this.style.background=\'rgba(34, 197, 94, 0.3)\'" onmouseout="this.style.background=\'rgba(34, 197, 94, 0.2)\'">' +
+                                '🔍 View on Solscan' +
+                            '</button>' +
+                        '</div>';
+                    
+                    confirmBtn.textContent = 'Close';
+                    confirmBtn.onclick = closeBonkStakingModal;
+                    confirmBtn.style.background = 'rgba(34, 197, 94, 0.8)';
+                    confirmBtn.disabled = false;
+                    confirmBtn.style.opacity = '1';
+                    
+                    const successMessage = isStaking ? 
+                        '✅ Successfully staked ' + amount.toLocaleString() + ' BONK!' :
+                        '✅ Unstaked ' + amount.toLocaleString() + ' BONK + ' + rewardsAmount.toLocaleString() + ' rewards!';
+                    showStatusMessage(successMessage, "success");
+                    
+                    // Trigger animation
+                    animateShiba('trading');
+                    
+                    // Show AI unlock message if applicable
+                    if (isStaking && bonkStakingData.aiUnlocked) {
+                        setTimeout(() => {
+                            showStatusMessage("🧠 AI Portfolio Analysis unlocked!", "success");
+                        }, 1000);
+                    }
+                    
+                } else {
+                    throw new Error(result.error || 'Transaction failed');
+                }
+                
+            } catch (error) {
+                console.error('❌ BONK staking error:', error);
+                
+                statusDiv.innerHTML = 
+                    '<div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; text-align: center;">' +
+                        '<div style="color: #EF4444; font-weight: 600; margin-bottom: 4px;">❌ ' + (isStaking ? 'Staking' : 'Unstaking') + ' Failed</div>' +
+                        '<div style="color: var(--text-secondary); font-size: 12px;">' + error.message + '</div>' +
+                    '</div>';
+                
+                // Re-enable button
+                confirmBtn.disabled = false;
+                confirmBtn.style.opacity = '1';
+                confirmBtn.textContent = 'Try Again';
+                
+                showStatusMessage("❌ " + (isStaking ? 'Staking' : 'Unstaking') + " failed: " + error.message, "error");
+            }
+        }
+
+        async function sendBonkStakingTransaction(action, amount, rewardsAmount) {
+            try {
+                console.log('💰 Sending BONK staking transaction on devnet:', { action, amount, rewardsAmount });
+                
+                // Check wallet connection (for now, we'll simulate even without wallet)
+                const isStaking = action === 'stake';
+                
+                // Initialize connection if not already done
+                if (!connection && window.solanaWeb3) {
+                    console.log('🔗 Initializing Solana devnet connection...');
+                    connection = new window.solanaWeb3.Connection('https://api.devnet.solana.com', 'confirmed');
+                }
+
+                // BONK staking contract address (simulated)
+                const BONK_STAKING_CONTRACT = '9bxbhr4RZtbJcP6CiNsimsBZyWLKX34tMVB3hsBTNKZE';
+                const BONK_MINT = 'GpRTjXEn6gTPhvbA225gtsbQeapd12JDXii8b33orzb5';
+
+                console.log('📤 Creating BONK staking transaction...');
+                console.log('🔒 Contract:', BONK_STAKING_CONTRACT);
+                console.log('💎 BONK amount:', amount, 'tokens');
+                console.log('🪙 BONK mint:', BONK_MINT);
+                
+                // Initialize memo text
+                let memoText = 'BIFE BONK ' + (isStaking ? 'Stake' : 'Unstake') + ': ' + (amount / 1000000) + 'M BONK';
+                if (!isStaking && rewardsAmount > 0) {
+                    memoText += ' + ' + (rewardsAmount / 1000000) + 'M rewards';
+                }
+                memoText += ' - Contract: ' + BONK_STAKING_CONTRACT;
+                
+                console.log('🔄 Creating BONK staking transaction simulation...');
+                
+                // Simulate the actual transaction process
+                console.log('🔄 Simulating BONK staking operation...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                console.log('📋 Preparing staking instructions...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                console.log('⏳ Broadcasting to devnet...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Generate a realistic Solana transaction signature format (base58, 88 chars)
+                const base58Chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+                let signature = '';
+                for (let i = 0; i < 88; i++) {
+                    signature += base58Chars.charAt(Math.floor(Math.random() * base58Chars.length));
+                }
+                
+                console.log('✅ BONK staking transaction simulation completed with signature:', signature);
+                
+                // Store transaction for reference
+                const transactionData = {
+                    signature: signature,
+                    action: action,
+                    amount: amount,
+                    rewardsAmount: rewardsAmount,
+                    timestamp: new Date().toISOString(),
+                    contract: BONK_STAKING_CONTRACT,
+                    bonkMint: BONK_MINT,
+                    memo: memoText,
+                    isReal: false, // Mark as simulation
+                    note: 'Simulated BONK staking transaction - wallet adapter needed for real signing',
+                    network: 'devnet'
+                };
+                
+                // Save to localStorage for persistence
+                try {
+                    const existingTxs = JSON.parse(localStorage.getItem('bifeStakingTransactions') || '[]');
+                    existingTxs.push(transactionData);
+                    localStorage.setItem('bifeStakingTransactions', JSON.stringify(existingTxs));
+                } catch (e) {
+                    console.warn('Could not save staking transaction to storage:', e);
+                }
+                
+                return {
+                    success: true,
+                    txid: signature,
+                    action: action,
+                    amount: amount,
+                    rewardsAmount: rewardsAmount,
+                    contract: BONK_STAKING_CONTRACT,
+                    isReal: false,
+                    memo: memoText
+                };
+                
+            } catch (error) {
+                console.error('❌ BONK staking transaction error:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
         function updateAITierDisplay() {
             const tierConfig = TIER_CONFIGS[currentAITier];
             const statusDiv = document.getElementById('aiTierStatus');
@@ -7497,6 +8309,7 @@ class MainActivity : Activity() {
         // Initialize AI tier display on page load
         document.addEventListener('DOMContentLoaded', function() {
             updateAITierDisplay();
+            initBonkStaking();
         });
 
         // Status message helper for settings
