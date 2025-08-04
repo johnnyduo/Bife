@@ -2,12 +2,6 @@
 
 <div align="center">
 
-<!-- Cute Lottie Character Representation -->
-<img src="https://img.shields.io/badge/🚀-Astronaut%20Dog-blue?style=for-the-badge" alt="Astronaut Dog">
-<img src="https://img.shields.io/badge/🦄-Happy%20Unicorn-pink?style=for-the-badge" alt="Happy Unicorn">
-<img src="https://img.shields.io/badge/😊-Smiling%20Dog-yellow?style=for-the-badge" alt="Smiling Dog">
-<img src="https://img.shields.io/badge/🎨-Shiba%20Artist-orange?style=for-the-badge" alt="Shiba Artist">
-
 [![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/johnnyduo/bife)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web-green.svg)](https://developer.android.com/)
 [![Solana](https://img.shields.io/badge/blockchain-Solana-purple.svg)](https://solana.com/)
@@ -15,13 +9,7 @@
 [![AI](https://img.shields.io/badge/AI-Gemini%20Powered-red.svg)](https://gemini.google.com/)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-*Revolutionary Voice-First AI DeFi Platform with Adorable Animated Companions*
-
-### 🎭 Meet Your AI DeFi Companions
-```
-    🚀 Astronaut Dog    🦄 Happy Unicorn    😊 Smiling Dog    🎨 Shiba Artist
-       (Navigator)       (Analyst)          (Trader)         (Creator)
-```
+*Revolutionary Voice-First AI DeFi Platform with Advanced Trading, NFT Creation, and Yield Farming*
 
 [🎯 Live Demo](#-live-demo) • [📋 Features](#-core-features) • [🏗️ Architecture](#-technical-architecture) • [🚀 Quick Start](#-quick-start) • [📚 Documentation](#-documentation)
 
@@ -132,96 +120,44 @@ To democratize DeFi access by making complex blockchain operations as natural as
 
 ## 🏗️ Technical Architecture
 
-> *"Where cute meets cutting-edge technology"* 🤖✨
-
 ### 🔧 **Core Technology Stack**
 
 ```mermaid
 graph TB
-    A[📱 Android WebView App] --> B[🎯 JavaScript DeFi Engine]
-    B --> C[⛓️ Solana Web3.js]
-    B --> D[🧠 Google Gemini AI]
-    B --> E[🎭 Lottie Animations]
-    C --> F[🚀 Solana Blockchain]
-    F --> G[🪙 SPL Tokens]
-    F --> H[🎨 Metaplex NFT]
-    F --> I[🌊 Raydium AMM]
-    B --> J[🎤 Voice Recognition]
-    B --> K[💾 Local Storage]
-    
-    style E fill:#ff9ff3,stroke:#333,stroke-width:3px
-    style D fill:#ff6b6b,stroke:#333,stroke-width:3px
-    style A fill:#4ecdc4,stroke:#333,stroke-width:3px
+    A[Android WebView App] --> B[JavaScript DeFi Engine]
+    B --> C[Solana Web3.js]
+    B --> D[Google Gemini AI]
+    B --> E[Lottie Animations]
+    C --> F[Solana Blockchain]
+    F --> G[SPL Tokens]
+    F --> H[Metaplex NFT]
+    F --> I[Raydium AMM]
+    B --> J[Voice Recognition]
+    B --> K[Local Storage]
 ```
 
-### 🎭 **Animation-First Frontend**
-```
-📱 Android Hybrid App
-├── 🎨 Lottie Animation Engine (Our Cute Companions!)
-│   ├── 🚀 AstronautDog.json ──► Space Navigation UI
-│   ├── 🦄 Happy Unicorn Dog.json ──► Portfolio Magic
-│   ├── 😊 Smiling Dog.json ──► Trading Happiness
-│   └── 🎨 Shiba.json ──► NFT Creation Studio
-├── 🎤 Voice Recognition ──► Natural Commands
-├── 📱 Responsive Design ──► Mobile-First Experience
-└── ⚡ Performance Optimized ──► 60fps Smooth Animations
-```
+### 📱 **Frontend Architecture**
+- **Hybrid Mobile App**: Kotlin + WebView for optimal performance
+- **Modern JavaScript**: ES6+ with async/await patterns
+- **Responsive Design**: Mobile-first with adaptive layouts
+- **Animation Framework**: Lottie for smooth character animations
+- **State Management**: Local storage with encryption
+- **Voice Interface**: Android Speech Recognition API
 
 ### ⛓️ **Blockchain Integration**
-```
-🌊 Solana Ocean
-├── 🔗 Web3.js Direct Integration
-├── 🪙 SPL Token Magic (BONK & USDC)
-├── 🎨 Metaplex NFT Factory
-├── 🌊 Raydium Trading Waves
-├── 🔍 Jupiter Price Discovery
-└── 📊 Solscan Verification Portal
-```
+- **Solana Web3.js**: Direct blockchain interaction
+- **SPL Token Program**: Token operations and transfers
+- **Metaplex Foundation**: NFT minting and metadata
+- **Raydium SDK**: AMM trading and liquidity
+- **Jupiter API**: Cross-DEX price aggregation
+- **Solscan API**: Transaction verification and history
 
-### 🧠 **AI & Voice Magic**
-```
-🤖 Intelligence Layer
-├── 🧠 Google Gemini AI ──► Smart Conversations
-├── 🎤 Natural Language Processing ──► Voice Commands
-├── 💭 Context Awareness ──► Memory & Learning
-├── 🎯 Smart Routing ──► Command Classification
-└── 🛡️ Fallback Systems ──► Always Available
-```
-
-### 🎨 **Lottie Animation System**
-```javascript
-const animationMagic = {
-  engine: "Lottie Web + React Native",
-  companions: {
-    "🚀 astronaut": {
-      file: "AstronautDog.json",
-      moods: ["exploring", "analyzing", "celebrating", "thinking"],
-      triggers: ["portfolio_view", "market_analysis", "voice_command"]
-    },
-    "🦄 unicorn": {
-      file: "Happy Unicorn Dog.json", 
-      moods: ["magical", "dancing", "sparkling", "predicting"],
-      triggers: ["profit_gain", "positive_trend", "ai_insight"]
-    },
-    "😊 smiling": {
-      file: "Smiling Dog.json",
-      moods: ["happy", "trading", "celebrating", "optimistic"],
-      triggers: ["successful_trade", "price_alert", "profit_made"]
-    },
-    "🎨 shiba": {
-      file: "Shiba.json",
-      moods: ["creating", "painting", "inspiring", "artistic"],
-      triggers: ["nft_creation", "art_generation", "collection_view"]
-    }
-  },
-  performance: {
-    fps: 60,
-    memoryOptimized: true,
-    batterySaver: true,
-    adaptiveQuality: true
-  }
-}
-```
+### 🧠 **AI & Voice Processing**
+- **Google Gemini AI**: Advanced language understanding
+- **Natural Language Processing**: Voice command interpretation
+- **Context Awareness**: Conversation memory and state
+- **Smart Routing**: Command classification and execution
+- **Fallback Systems**: Local processing when API unavailable
 
 ### 🛡️ **Security Architecture**
 - **Client-side Key Management**: Secure keypair generation
@@ -290,261 +226,128 @@ const stakingTiers = {
 
 ## 🤖 AI Companion System
 
-> *"Each companion is a living Lottie animation with unique personality and specialized DeFi expertise"*
-
-### 🚀 **Astronaut Dog - Portfolio Navigator** 
-<div align="center">
-<img src="https://img.shields.io/badge/🚀-Space%20Navigation%20Expert-blue?style=for-the-badge&logo=rocket" alt="Astronaut Dog">
-</div>
-
+### 👨‍🚀 **Astronaut Dog - Portfolio Analyst**
 ```javascript
 const astronautFeatures = {
-  personality: "🚀 Professional, analytical, space-themed explorer",
-  specialization: "Portfolio analysis and market navigation",
-  animations: ["🛰️ analyzing", "🎉 celebrating", "🤔 thinking", "✨ discovering"],
+  personality: "Professional, analytical, space-themed",
+  specialization: "Portfolio analysis and market insights",
+  animations: ["analyzing", "celebrating", "thinking"],
   voiceCommands: [
-    "🚀 Analyze my portfolio",
-    "📊 Show market trends", 
-    "⚖️ Rebalance suggestions",
-    "🌟 Navigate to trading"
+    "Analyze my portfolio",
+    "Show market trends", 
+    "Rebalance suggestions"
   ],
   aiCapabilities: {
-    riskAssessment: "🛡️ Advanced risk analysis",
-    marketPrediction: "🔮 AI-powered forecasting",
-    portfolioOptimization: "⚡ Smart rebalancing"
-  },
-  lottiePath: "assets/models/AstronautDog.json"
+    riskAssessment: true,
+    marketPrediction: true,
+    portfolioOptimization: true
+  }
 }
 ```
 
-### 🦄 **Happy Unicorn Dog - Magical Analyst**
-<div align="center">
-<img src="https://img.shields.io/badge/🦄-Magical%20Portfolio%20Wizard-pink?style=for-the-badge&logo=sparkles" alt="Happy Unicorn">
-</div>
-
+### 🦄 **Happy Unicorn Dog - Creative Assistant**
 ```javascript
 const unicornFeatures = {
-  personality: "🦄 Creative, magical, optimistic fortune-teller",
-  specialization: "AI-powered portfolio magic and predictions",
-  animations: ["💃 dancing", "✨ sparkles", "🌈 creating", "🔮 predicting"],
+  personality: "Creative, magical, optimistic",
+  specialization: "NFT creation and artistic guidance",
+  animations: ["dancing", "sparkles", "creating"],
   voiceCommands: [
-    "🦄 Work your magic on my portfolio",
-    "✨ Generate magical insights",
-    "🌈 Show me the rainbow trends",
-    "🔮 Predict market movements"
+    "Create magical NFT",
+    "Generate art ideas",
+    "Show collection"
   ],
   aiCapabilities: {
-    magicalAnalysis: "🪄 Mystical market insights",
-    rainbowForecasts: "🌈 Colorful profit predictions",
-    unicornPower: "💎 Rare gem opportunity detection"
-  },
-  lottiePath: "assets/models/Happy Unicorn Dog.json"
+    artGeneration: true,
+    creativePrompts: true,
+    rarityAnalysis: true
+  }
 }
 ```
 
-### 😊 **Smiling Dog - Happy Trading Specialist**
-<div align="center">
-<img src="https://img.shields.io/badge/😊-Optimistic%20Trading%20Expert-yellow?style=for-the-badge&logo=trending-up" alt="Smiling Dog">
-</div>
-
+### 😊 **Smiling Dog - Trading Specialist**
 ```javascript
 const tradingDogFeatures = {
-  personality: "😊 Enthusiastic, confident, eternally optimistic trader",
-  specialization: "Happy trading execution and positive market vibes",
-  animations: ["📈 trading", "🎉 celebrating", "📊 analyzing", "💰 profit-dancing"],
+  personality: "Enthusiastic, confident, market-savvy",
+  specialization: "Trading execution and market analysis",
+  animations: ["trading", "celebrating", "analyzing"],
   voiceCommands: [
-    "😊 Execute my happy trade",
-    "📈 Show me good market news",
-    "💰 Find profitable opportunities",
-    "🎯 Set positive price alerts"
+    "Execute trade",
+    "Market analysis",
+    "Price alerts"
   ],
   aiCapabilities: {
-    happyTrading: "😊 Optimistic trade execution",
-    positiveAnalysis: "📈 Bullish market sentiment",
-    profitMagnet: "💰 Opportunity attraction algorithms"
-  },
-  lottiePath: "assets/models/Smiling Dog.json"
-}
-```
-
-### 🎨 **Shiba Artist - Creative NFT Genius**
-<div align="center">
-<img src="https://img.shields.io/badge/🎨-Creative%20NFT%20Mastermind-orange?style=for-the-badge&logo=palette" alt="Shiba Artist">
-</div>
-
-```javascript
-const shibaArtistFeatures = {
-  personality: "🎨 Artistic, creative, imaginative NFT visionary",
-  specialization: "AI-powered NFT creation and artistic inspiration",
-  animations: ["🎨 painting", "✨ creating", "🖌️ designing", "🌟 inspiring"],
-  voiceCommands: [
-    "🎨 Create a masterpiece NFT",
-    "✨ Generate artistic inspiration",
-    "🖼️ Show my NFT collection",
-    "🌈 Paint me something magical"
-  ],
-  aiCapabilities: {
-    artGeneration: "🎨 AI-powered artwork creation",
-    creativePrompts: "💡 Infinite inspiration generator",
-    rarityMagic: "💎 Rarity scoring algorithms",
-    styleTransfer: "🖌️ Artistic style transformations"
-  },
-  lottiePath: "assets/models/Shiba.json"
+    tradeExecution: true,
+    marketAnalysis: true,
+    riskManagement: true
+  }
 }
 ```
 
 ### 🎭 **AI Behavior System**
-```
-🧠 Context Awareness ──► 💭 Remembers previous conversations
-❤️ Emotional Intelligence ──► 😊 Responds to user sentiment  
-🎓 Learning Capability ──► 📈 Adapts to user preferences
-🎮 Multi-modal Interaction ──► 🎤 Voice, text, and gesture recognition
-🎭 Personality Consistency ──► ✨ Maintains character traits across sessions
-```
-
-### 🎪 **Animation Magic**
-- **🎬 Lottie-Powered**: Smooth vector animations with personality
-- **📱 Mobile Optimized**: 60fps performance on Android devices
-- **🎨 Interactive**: Responds to user interactions and market changes
-- **⚡ Smart Loading**: Efficient memory management and caching
-- **🌈 Mood Adaptive**: Animations change based on portfolio performance
+- **Context Awareness**: Remembers previous conversations
+- **Emotional Intelligence**: Responds to user sentiment
+- **Learning Capability**: Adapts to user preferences
+- **Multi-modal Interaction**: Voice, text, and gesture recognition
+- **Personality Consistency**: Maintains character traits across sessions
 
 ---
 
 ## 🎨 NFT Studio & Marketplace
 
-> *"Where Shiba Artist brings your dreams to life with AI magic"* 🎨✨
-
-### 🎯 **AI-Powered NFT Generation with Shiba Artist**
-
-<div align="center">
-<img src="https://img.shields.io/badge/🎨-Shiba%20Artist%20at%20Work-orange?style=for-the-badge&logo=palette" alt="Shiba Artist">
-</div>
+### 🎯 **AI-Powered NFT Generation**
 
 #### 🎨 **Creative Elements System**
 ```javascript
-const shibaCreativeStudio = {
-  artist: "🎨 Shiba NFT Artist",
-  studio: "AI-Powered Creative Workshop",
-  
+const creativeElements = {
   names: [
-    "🌌 Cosmic Shiba Explorer", "🛡️ Galactic Bonk Guardian",
-    "⚔️ Stellar Inu Warrior", "🌟 Nebula Pup Adventures",
-    "🔮 Quantum Shiba Dreams", "🚀 Astro Doge Legend"
+    "Cosmic Shiba Explorer", "Galactic Bonk Guardian",
+    "Stellar Inu Warrior", "Nebula Pup Adventures"
   ],
-  
   styles: [
-    "🚀 astronaut", "👑 royal", "🥷 ninja", "🏴‍☠️ pirate", 
-    "🧙 wizard", "🤖 cyber", "⚔️ samurai", "👨‍🍳 chef"
+    "astronaut", "royal", "ninja", "pirate", 
+    "wizard", "cyber", "samurai", "chef"
   ],
-  
   backgrounds: [
-    "🌌 space nebula", "🏙️ cyberpunk city", "🌲 enchanted forest",
-    "🏰 underwater palace", "💎 crystal cave", "☁️ floating islands"
+    "space nebula", "cyberpunk city", "enchanted forest",
+    "underwater palace", "crystal cave", "floating islands"
   ],
-  
   accessories: [
-    "👑 diamond crown", "🥽 laser goggles", "🪄 magic wand",
-    "🎒 jetpack", "🦸 cape", "💎 golden collar"
-  ],
-  
-  shibaPersonality: {
-    mood: "🎨 Always creative and inspiring",
-    catchphrase: "Let's paint the blockchain beautiful!",
-    animations: ["🖌️ painting", "✨ creating", "🌈 inspiring", "🎭 designing"]
-  }
+    "diamond crown", "laser goggles", "magic wand",
+    "jetpack", "cape", "golden collar"
+  ]
 }
 ```
 
-#### 💎 **Rarity System - Shiba's Secret Formula**
+#### 💎 **Rarity System**
 ```javascript
-const shibaRarityMagic = {
-  "💎 Legendary": { 
-    weight: "12+", 
-    probability: "1%", 
-    shibaReaction: "🤩 OMG! We created a masterpiece!",
-    traits: "✨ Ultra-rare magical combinations" 
-  },
-  "🔥 Epic": { 
-    weight: "9-11", 
-    probability: "5%", 
-    shibaReaction: "🎉 Wow! This is epic art!",
-    traits: "🌟 Rare style combinations" 
-  },
-  "💜 Rare": { 
-    weight: "6-8", 
-    probability: "15%", 
-    shibaReaction: "😍 Beautiful rare creation!",
-    traits: "🎨 Uncommon artistic attributes" 
-  },
-  "💙 Uncommon": { 
-    weight: "3-5", 
-    probability: "25%", 
-    shibaReaction: "😊 Nice artistic touch!",
-    traits: "🖼️ Some rare artistic traits" 
-  },
-  "💚 Common": { 
-    weight: "1-2", 
-    probability: "54%", 
-    shibaReaction: "🙂 Lovely standard art!",
-    traits: "🎭 Classic artistic attributes" 
-  }
+const rarityCalculation = {
+  legendary: { weight: 12+, probability: 1%, traits: "Ultra-rare combinations" },
+  epic: { weight: 9-11, probability: 5%, traits: "Rare style combinations" },
+  rare: { weight: 6-8, probability: 15%, traits: "Uncommon attributes" },
+  uncommon: { weight: 3-5, probability: 25%, traits: "Some rare traits" },
+  common: { weight: 1-2, probability: 54%, traits: "Standard attributes" }
 }
 ```
 
 ### 📄 **Pagination & Collection Management**
-```
-🖼️ NFT Gallery System
-├── 📱 Mobile-Optimized ──► 6 NFTs per page for smooth scrolling
-├── 💾 Smart Caching ──► LocalStorage with timestamp magic
-├── ⚡ Real-time Updates ──► New NFTs appear instantly
-├── 🔄 Cross-platform Sync ──► Consistent across devices
-└── 📊 Export Functions ──► Portfolio reports and tax docs
+- **Efficient Loading**: 6 NFTs per page for optimal mobile performance
+- **Smart Caching**: LocalStorage with timestamp validation
+- **Real-time Updates**: Immediate display of newly minted NFTs
+- **Cross-platform Sync**: Consistent collection across devices
+- **Export Functions**: Portfolio reports and tax documentation
 
-🎨 Shiba Artist Features:
-├── 🖌️ Live Art Generation ──► Watch Shiba create in real-time
-├── 🎭 Animation Feedback ──► Shiba reacts to your NFT success
-├── 🌈 Style Recommendations ──► AI suggests perfect combinations
-└── 💎 Rarity Predictions ──► Preview rarity before minting
-```
+### 🔗 **Blockchain Integration**
+- **Metaplex Standard**: Full NFT metadata compliance
+- **IPFS Storage**: Decentralized metadata and artwork storage
+- **On-chain Verification**: Solscan integration for authenticity
+- **Transfer Capabilities**: Built-in send/receive functionality
+- **Marketplace Ready**: Integration hooks for secondary markets
 
-### 🔗 **Blockchain Integration with Cute Confirmations**
-```javascript
-const nftBlockchainMagic = {
-  standard: "📜 Metaplex Token Metadata (Official NFT Standard)",
-  storage: "🌐 IPFS Decentralized Storage",
-  verification: "🔍 Solscan Integration for Authenticity",
-  
-  shibaWorkflow: {
-    step1: "🎨 Shiba Artist creates your masterpiece",
-    step2: "💾 Artwork uploaded to IPFS galaxy", 
-    step3: "⛓️ Metadata anchored on Solana blockchain",
-    step4: "🎉 Shiba celebrates your new NFT!",
-    step5: "🖼️ Added to your collection with animations"
-  },
-  
-  marketplaceReady: {
-    transfers: "🔄 Built-in send/receive with cute animations",
-    integration: "🏪 Ready for secondary market magic",
-    royalties: "💰 Creator fees enforced on-chain"
-  }
-}
-```
-
-### 📊 **Analytics & Insights with Companion Reactions**
-```
-📈 NFT Performance Dashboard
-├── 🎨 Creation Statistics ──► Track your artistic journey
-├── 💎 Rarity Analysis ──► Real-time market positioning  
-├── 📊 Performance Tracking ──► Value appreciation charts
-└── 🌟 Community Features ──► Social sharing with companions
-
-🎭 Companion Reactions:
-├── 🚀 Astronaut Dog ──► "Your NFT portfolio is stellar!"
-├── 🦄 Happy Unicorn ──► "Magical NFT gains detected!"
-├── 😊 Smiling Dog ──► "Your art makes me so happy!"
-└── 🎨 Shiba Artist ──► "We're creating blockchain history!"
-```
+### 📊 **Analytics & Insights**
+- **Creation Statistics**: Track minting history and costs
+- **Rarity Analysis**: Real-time rarity scoring and market positioning
+- **Performance Tracking**: Value appreciation and trading volume
+- **Community Features**: Social sharing and collection showcasing
 
 ---
 
@@ -800,51 +603,36 @@ const performanceOptimizations = {
 
 ## 🚀 Quick Start Guide
 
-> *"Let your AI companions guide you to DeFi success!"* 🌟
-
-### 🎭 **Meet Your Guides First**
-Before we start, meet your adorable AI companions who will help you throughout your journey:
-
-<div align="center">
-
-| � **Astronaut Dog** | 🦄 **Happy Unicorn** | 😊 **Smiling Dog** | 🎨 **Shiba Artist** |
-|:---:|:---:|:---:|:---:|
-| *"Ready for launch!"* | *"Magic awaits!"* | *"Let's trade happily!"* | *"Art time!"* |
-| Navigation Expert | Portfolio Wizard | Trading Specialist | NFT Creator |
-
-</div>
-
-### �📋 **Prerequisites**
+### 📋 **Prerequisites**
 
 ```bash
-# Required Software (Your Companions Will Thank You! 😊)
-- Android Studio Arctic Fox+ (for Android development) 🤖
-- Node.js 16+ (for dependency management) 📦  
-- Java 11+ (for Android compilation) ☕
-- Yarn (package manager) 🧶
-- Git (version control) 🌲
+# Required Software
+- Android Studio Arctic Fox+ (for Android development)
+- Node.js 16+ (for dependency management)
+- Java 11+ (for Android compilation)
+- Yarn (package manager)
+- Git (version control)
 
-# Optional but Recommended (For Extra Fun! ✨)
-- Android Device/Emulator with API 24+ 📱
-- Solana CLI tools ⛓️
-- VS Code with Solana extension 💻
+# Optional but Recommended
+- Android Device/Emulator with API 24+
+- Solana CLI tools
+- VS Code with Solana extension
 ```
 
 ### ⚡ **Installation Steps**
 
-#### 1️⃣ **Clone Repository** 
+#### 1️⃣ **Clone Repository**
 ```bash
-# 🚀 Astronaut Dog says: "Let's start our space mission!"
 git clone https://github.com/johnnyduo/bife.git
 cd bife
 ```
 
 #### 2️⃣ **Install Dependencies**
 ```bash
-# 🦄 Happy Unicorn says: "Time for some magical dependency installation!"
+# Install main app dependencies
 yarn install
 
-# Install Solana token dependencies  
+# Install Solana token dependencies
 cd solana-tokens
 yarn install
 cd ..
@@ -852,24 +640,23 @@ cd ..
 
 #### 3️⃣ **Environment Configuration**
 ```bash
-# 😊 Smiling Dog says: "Let's set up your environment happily!"
+# Create environment files
 cp android/local.properties.example android/local.properties
 cp .env.example .env
 
-# Configure API keys (optional but recommended for full magic ✨)
+# Configure API keys (optional)
 export GEMINI_API_KEY="your_gemini_api_key_here"
 export SOLSCAN_API_KEY="your_solscan_api_key_here"
 ```
 
 #### 4️⃣ **Setup Solana Tokens (Optional)**
 ```bash
-# 🎨 Shiba Artist says: "Let's create some tokens for our artistic trading!"
 cd solana-tokens
 
 # Setup wallet for token deployment
 yarn setup-wallet
 
-# Deploy mock tokens to devnet  
+# Deploy mock tokens to devnet
 yarn create-tokens
 
 # Check deployment status
@@ -880,7 +667,6 @@ cd ..
 
 #### 5️⃣ **Build & Run Android App**
 ```bash
-# 🚀 Astronaut Dog says: "Final countdown! Let's launch!"
 cd android
 
 # Build the application
@@ -889,84 +675,33 @@ cd android
 # Install on connected device/emulator
 ./gradlew installDebug
 
-# Or run with live reload (Advanced Space Mission Mode! 🚀)
+# Or run with live reload
 ./gradlew installDebug && adb shell am start -n com.bife/.MainActivity
 ```
 
-### 🎯 **First-Time Setup - Companion Guided Tour**
+### 🎯 **First-Time Setup**
 
-1. **🚀 Launch the App** - *Astronaut Dog will greet you!*
-   ```
-   "Welcome to BIFE Space Station! Let's explore the DeFi universe together!" 🚀
-   ```
+1. **Launch the App** on your Android device
+2. **Connect Wallet** - The app will generate a devnet wallet
+3. **Request Airdrop** - Get free SOL for testing
+4. **Explore Features**:
+   - Try voice commands: "Show my portfolio"
+   - Create an NFT: "Generate a space-themed NFT"
+   - Execute a trade: "Swap 10 SOL to BONK"
+   - Stake tokens: "Stake 100000 BONK"
 
-2. **🔗 Connect Wallet** - *The app will generate a devnet wallet*
-   ```
-   🦄 Happy Unicorn: "Magical wallet creation in progress... ✨"
-   ```
-
-3. **💰 Request Airdrop** - *Get free SOL for testing*
-   ```
-   😊 Smiling Dog: "Free SOL coming your way! Trading time! 💰"
-   ```
-
-4. **🎪 Explore Features** - *Your companions will guide each step:*
-   
-   **🎤 Voice Commands:**
-   ```
-   🚀 Try saying: "Show my portfolio" 
-   → Astronaut Dog will navigate you instantly!
-   ```
-   
-   **🎨 Create an NFT:**
-   ```
-   🎨 Try saying: "Generate a space-themed NFT"
-   → Shiba Artist will start creating immediately!
-   ```
-   
-   **💱 Execute a Trade:**
-   ```
-   😊 Try saying: "Swap 10 SOL to BONK"
-   → Smiling Dog will execute with happiness!
-   ```
-   
-   **💎 Stake Tokens:**
-   ```
-   🦄 Try saying: "Stake 100000 BONK"
-   → Happy Unicorn will work magic on your rewards!
-   ```
-
-### 🔧 **Development Mode - Advanced Companion Features**
+### 🔧 **Development Mode**
 
 ```bash
-# 🚀 Astronaut Dog's Advanced Space Mode
+# Enable development features
 adb shell setprop debug.bife.dev true
 
-# 🔍 View real-time logs (See what your companions are thinking!)
+# View logs in real-time
 adb logcat -s BifeApp
 
-# 🎭 Fresh start (Reset all companion memories)
+# Clear app data for fresh start
 adb shell pm clear com.bife
 ```
-
-### 🎉 **Success Celebration**
-When everything is running, your companions will celebrate:
-
-```
-🚀 Astronaut Dog: "Mission accomplished! DeFi space station is operational!" 
-🦄 Happy Unicorn: "Magical setup complete! Ready for portfolio wizardry!" ✨
-😊 Smiling Dog: "Everything looks perfect! Happy trading ahead!" 😄
-🎨 Shiba Artist: "Creative studio ready! Let's make beautiful NFTs!" 🎨
-```
-
-### 🆘 **Need Help?**
-Your AI companions are always here to help:
-- **🚀 Navigation Issues**: Ask Astronaut Dog
-- **📊 Portfolio Questions**: Consult Happy Unicorn  
-- **💱 Trading Problems**: Chat with Smiling Dog
-- **🎨 NFT Creation**: Work with Shiba Artist
-
-*Just use voice commands or check the in-app help guides!* 💫
 
 ---
 
@@ -1502,89 +1237,39 @@ const thirdPartyLicenses = {
 
 ### 🌐 **Community Links**
 
-<div align="center">
-
-🎭 **Join Our Companion Community** �
-
-| Platform | Link | Companion Guide |
-|:--------:|:----:|:---------------:|
-| �🌍 **Website** | [https://bife.app](https://bife.app) | 🚀 *Astronaut Dog's Home Base* |
-| 📱 **GitHub** | [https://github.com/johnnyduo/bife](https://github.com/johnnyduo/bife) | 🎨 *Shiba Artist's Code Gallery* |
-| 💬 **Discord** | [https://discord.gg/bife](https://discord.gg/bife) | 😊 *Smiling Dog's Happy Chat* |
-| 🐦 **Twitter** | [https://twitter.com/BifeApp](https://twitter.com/BifeApp) | 🦄 *Happy Unicorn's Magic Updates* |
-| 📱 **Telegram** | [https://t.me/BifeOfficial](https://t.me/BifeOfficial) | 🚀 *Space Mission Communications* |
-
-</div>
+- **🌍 Website**: [https://bife.app](https://bife.app)
+- **📱 GitHub**: [https://github.com/johnnyduo/bife](https://github.com/johnnyduo/bife)
+- **💬 Discord**: [https://discord.gg/bife](https://discord.gg/bife)
+- **🐦 Twitter**: [https://twitter.com/BifeApp](https://twitter.com/BifeApp)
+- **📱 Telegram**: [https://t.me/BifeOfficial](https://t.me/BifeOfficial)
 
 ### 📧 **Contact Information**
 
-```
-🎯 Your AI Companions Are Here to Help!
+- **💼 Business**: business@bife.app
+- **🛠️ Technical**: dev@bife.app
+- **🔒 Security**: security@bife.app
+- **🤝 Partnerships**: partners@bife.app
 
-💼 Business Inquiries ──► business@bife.app
-   � Astronaut Dog: "Ready for business partnerships!"
+### 🆘 **Support**
 
-�🛠️ Technical Support ──► dev@bife.app  
-   🎨 Shiba Artist: "Let's fix any creative bugs!"
-
-🔒 Security Concerns ──► security@bife.app
-   😊 Smiling Dog: "Keeping your assets safe and happy!"
-
-🤝 Partnerships ──► partners@bife.app
-   🦄 Happy Unicorn: "Magical collaborations await!"
-```
-
-### 🆘 **Support Resources**
-
-<div align="center">
-
-| Resource | Description | Companion Helper |
-|:--------:|:-----------:|:----------------:|
-| 📚 **Documentation** | [https://docs.bife.app](https://docs.bife.app) | 🚀 *Complete Space Manual* |
-| ❓ **FAQ** | [https://bife.app/faq](https://bife.app/faq) | 😊 *Happy Answers* |
-| 🎫 **Support Tickets** | [https://support.bife.app](https://support.bife.app) | 🦄 *Magic Problem Solver* |
-| 📖 **Developer Guide** | [https://dev.bife.app](https://dev.bife.app) | 🎨 *Creative Dev Resources* |
-
-</div>
-
-### 🎪 **Community Guidelines**
-
-```
-🎭 Our Companion Community Values:
-
-🚀 Be Exploratory ──► Like Astronaut Dog, always ready to discover
-🦄 Spread Magic ──► Like Happy Unicorn, bring positivity everywhere  
-😊 Stay Happy ──► Like Smiling Dog, keep the vibes positive
-🎨 Create Beauty ──► Like Shiba Artist, make the space more beautiful
-
-💫 Remember: We're all here to democratize DeFi with cute companions! 💫
-```
+- **📚 Documentation**: [https://docs.bife.app](https://docs.bife.app)
+- **❓ FAQ**: [https://bife.app/faq](https://bife.app/faq)
+- **🎫 Support Tickets**: [https://support.bife.app](https://support.bife.app)
+- **📖 Developer Guide**: [https://dev.bife.app](https://dev.bife.app)
 
 ---
 
 <div align="center">
 
-### 🚀 **Ready to revolutionize DeFi with adorable AI companions?**
-
-<img src="https://img.shields.io/badge/🚀-Start%20Your%20Space%20Mission-blue?style=for-the-badge" alt="Start Mission">
-<img src="https://img.shields.io/badge/🦄-Join%20Magic%20Community-pink?style=for-the-badge" alt="Join Community">
-<img src="https://img.shields.io/badge/😊-Happy%20Trading-yellow?style=for-the-badge" alt="Happy Trading">
-<img src="https://img.shields.io/badge/🎨-Create%20NFT%20Art-orange?style=for-the-badge" alt="Create Art">
+### 🚀 **Ready to revolutionize DeFi with voice-first AI?**
 
 [Get Started Now](#-quick-start-guide) • [Join Community](https://discord.gg/bife) • [Read Docs](https://docs.bife.app)
 
 ---
 
-**Made with ❤️ by the BIFE Team & Our Adorable AI Companions**
+**Made with ❤️ by the BIFE Team**
 
-```
-🚀 Astronaut Dog: "Mission accomplished! Welcome to the DeFi universe!" 
-🦄 Happy Unicorn: "Magical adventures await! ✨"
-😊 Smiling Dog: "Happy trading and positive vibes! 😄"  
-🎨 Shiba Artist: "Let's paint the blockchain beautiful! 🎨"
-```
-
-*Democratizing DeFi through Voice-First AI Technology & Cute Companions* 💫
+*Democratizing DeFi through Voice-First AI Technology*
 
 </div>
 - **Secure Architecture**: Environment-based token management
